@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:04:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/10 21:20:40 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/11 19:22:17 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ std::string normalize_token(std::string token)
         if (removed_one)
             i--;
 
-        if ((token[i] == '\\') && !removed_one && (i != token.length() - 1) && ((token[i + 1] == '\\') || (token[i + 1] == ';') || (token[i + 1] == '{') || (token[i + 1] == '}')))
+        if ((token[i] == '\\') && !removed_one && (i != token.length() - 1) && ((token[i + 1] == '\\') || (token[i + 1] == ';') || (token[i + 1] == '{') || (token[i + 1] == '}') || (token[i + 1] == '#')))
         {
             token.erase(i, 1);
             removed_one = true;
@@ -64,7 +64,7 @@ std::string get_next_chunk(std::string token)
 
 /* this function's job is to only store tokens and skip comments */
 
-void    append_token_to_queue(std::string token, std::queue<std::string>& tokens_queue, std::string file_name, unsigned int line_num)
+void    append_token_to_queue(std::string token, std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string file_name, unsigned int line_num)
 {
     std::string chunk;
     size_t      chunk_pos;
@@ -78,14 +78,14 @@ void    append_token_to_queue(std::string token, std::queue<std::string>& tokens
             break;
         chunk = get_next_chunk(token);
         
-        tokens_queue.push(normalize_token(chunk));
+        tokens_queue.push(std::make_pair(line_num,normalize_token(chunk)));
 
         chunk_pos = token.find(chunk);
         token.erase(chunk_pos, chunk.length());
     }
 }
 
-void tokenize_line(std::queue<std::string>& tokens_queue, std::string line, std::string file_name, unsigned int line_num)
+void tokenize_line(std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string line, std::string file_name, unsigned int line_num)
 {
     std::stringstream       strm(line);
     std::string             token;
@@ -109,8 +109,9 @@ void tokenize_line(std::queue<std::string>& tokens_queue, std::string line, std:
 
 void    config_tokenizer(std::string file_name)
 {
-    std::queue<std::string> tokens_queue;
+    std::queue<std::pair<unsigned int, std::string> > tokens_queue;
     unsigned    int         line_num;
+    HttpContext             http_config;
     std::ifstream           file;
     std::string             line;
 
@@ -126,10 +127,15 @@ void    config_tokenizer(std::string file_name)
         tokenize_line(tokens_queue, line, file_name, line_num);
         line_num++;
     }
-
-    while (!tokens_queue.empty())
+    if (tokens_queue.front().second != "http")
     {
-        std::cout << tokens_queue.front() << std::endl;
-        tokens_queue.pop();
+        if (tokens_queue.front().second == ";" || tokens_queue.front().second == "{" || tokens_queue.front().second == "}")
+            throw_config_parse_exception("Unexpected", tokens_queue.front().second, file_name, tokens_queue.front().first);
+        else if (is_http_ctx_dir(tokens_queue.front().second) || is_server_ctx_dir(tokens_queue.front().second) || is_location_ctx_dir(tokens_queue.front().second))
+            throw_config_parse_exception("Not allowed", tokens_queue.front().second, file_name, tokens_queue.front().first);
+        else
+            throw_config_parse_exception("Unknown", tokens_queue.front().second, file_name, tokens_queue.front().first);
     }
+    tokens_queue.pop();
+    store_config(http_config, tokens_queue, file_name, "http");
 }

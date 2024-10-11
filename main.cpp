@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:05:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/10 21:14:25 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/11 13:15:35 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 
     file_name = argv[1];
     
-    if((file_name.length() <= 7) || (file_name.find(".config" ,file_name.length() - 7)))
+    if((file_name.length() <= 7) || (file_name.find(".config" ,file_name.length() - 7) == std::string::npos))
     {
         std::cerr << "Wrong file extension!" << std::endl;
         std::cerr << "Usage : ./webserv file.config" << std::endl;

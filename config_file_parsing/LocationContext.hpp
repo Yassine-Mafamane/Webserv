@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:25 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/09 15:48:31 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/11 16:59:27 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,11 @@ class LocationContext {
 
         // std::vector<std::pair <unsigned short, std::string> >   error_pages;
 
+        // std::vector<std::pair <unsigned short, std::string> >   redirections;
+
         // std::vector<std::string>                                allowed_methods;  
+
+        // std::string                                             location;
 
         // std::string                                             root_directory;
 
@@ -41,8 +45,9 @@ class LocationContext {
 
         // std::string                                             index;
 
-        // bool                                                    auto_index;        
+        // bool                                                    auto_index;      
 
+        // exact or not
 };
 
 
