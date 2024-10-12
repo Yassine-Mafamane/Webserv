@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:09:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/11 21:41:30 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/12 19:55:56 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,5 +33,16 @@ bool    is_server_ctx_dir(std::string directive);
 bool    is_location_ctx_dir(std::string directive);
 void    throw_config_parse_exception(std::string type, std::string token, std::string file_name, unsigned int line_num);
 void    throw_wrong_value_exception(std::string directive, std::string wrong_value, std::string file_name, unsigned int line_num);
+
+std::string extract_cgi_extension(std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string file_name);
+std::pair <unsigned short, std::string> extract_error_page_info(std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string file_name);
+bool    extract_autoindex_value(std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string file_name);
+unsigned short  extract_port_number(std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string file_name);
+std::string    extract_root_dir(std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string file_name);
+std::string extract_upload_dir(std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string file_name);
+std::string extract_index(std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string file_name);
+std::vector<std::string>    extract_srv_names(std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string file_name);
+std::vector<std::string>    extract_allowed_methods(std::queue<std::pair<unsigned int, std::string> >& tokens_queue, std::string file_name);
+
 
 #endif
