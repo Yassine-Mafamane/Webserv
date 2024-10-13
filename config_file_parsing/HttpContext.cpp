@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 13:01:34 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/12 21:05:21 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/13 21:36:19 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,15 +32,9 @@ void    HttpContext::set_error_page(const std::pair <unsigned short, std::string
         {
             (*it).second = error_info.second;
 
-            // Testing 
-            std::cout << "error code : " << error_info.first << " page's has been changed to : " << error_info.second << std::endl;
-
             return ;
         }
     }
-
-    // Testing 
-    std::cout << "new error page has got stored : " << error_info.first << ": " << error_info.second << std::endl;
 
     this->error_pages.push_back(error_info);
 }
@@ -51,17 +45,11 @@ void    HttpContext::set_auto_index(bool on_off)
         this->auto_index = true;
     else
         this->auto_index = false;
-
-    // Testing 
-    std::cout << "autoindex value is getting stored! as " << this->auto_index << std::endl;
 }
 
 void    HttpContext::set_cgi_extension(const std::string& extension)
 {
     this->cgi_extension = extension;
-    
-    // Testing 
-    std::cout << "New cgi_extension has been set: " << extension << std::endl;
 }
 
 void   HttpContext::set_new_server( void )
@@ -79,13 +67,58 @@ void   HttpContext::set_new_server( void )
     
     /* Pushing the newly created server to the servers vector */
     this->servers.push_back(new_server);
-
-    // Testing     
-    std::cout << "New ServerContext has been created!" << std::endl;
 }
 
 
 ServerContext&  HttpContext::get_latest_server( void )
 {
     return this->servers.back();
+}
+
+const std::vector<ServerContext>& HttpContext::get_servers( void ) const
+{
+    return this->servers;
+}
+
+const std::vector<std::pair <unsigned short, std::string> >& HttpContext::get_error_pages( void ) const
+{
+    return this->error_pages;
+}
+
+const std::string&  HttpContext::get_cgi_extension( void ) const
+{
+    return this->cgi_extension;
+}
+
+const bool& HttpContext::get_auto_index( void ) const
+{
+    return this->auto_index;
+}
+
+void    HttpContext::show_info()
+{
+    std::cout << "Major HTTP context info :" << std::endl;
+    std::cout << "Number of defined error pages : " << this->error_pages.size() << std::endl;
+    std::cout << "Error pages info : " << std::endl;
+
+    for (auto it = error_pages.begin(); it < error_pages.end(); it++)
+    {
+        std::cout << "Status code : " << "\"" << it->first << "\"" << " Path : " << "\"" << it->second << "\"" << std::endl;
+    }
+    
+    std::cout << "Defined CGI extension : " << "\"" << cgi_extension << "\"" << std::endl;
+
+    std::cout << "Auto index state : ";
+    if (auto_index)
+        std::cout << "\"ON\"" << std::endl;
+    else
+        std::cout << "\"OFF\"" << std::endl;
+
+    std::cout << "Number of defined server contexts : " << this->servers.size() << std::endl;
+    std::cout << "Servers info : " << std::endl;
+    
+    for (auto it = servers.begin(); it < servers.end(); it++)
+    {
+        it->show_info();
+    }
 }

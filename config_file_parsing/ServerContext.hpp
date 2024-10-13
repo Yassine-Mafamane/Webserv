@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:30 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/12 20:58:40 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/13 18:22:44 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,11 @@ class ServerContext {
 
         /* The following method returns the latest inserted locationContext in the locations vector in order to store it's info. */
         LocationContext&  get_latest_location( void );
+
+        /* Getters */
+    
+        // Testing
+        void show_info();
 
     private :
 

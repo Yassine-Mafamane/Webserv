@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:25 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/12 20:57:10 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/13 20:11:32 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,17 +39,21 @@ class LocationContext {
     void    set_auto_index      ( bool on_off );
     void    set_allowed_methods ( std::vector<std::string> methods );
     void    make_exact          ( void );
+    void    set_location        ( std::string location );
 
+    /* Getters */
 
+    //Testing 
+    void    show_info();
     private :
 
         std::vector<std::pair <unsigned short, std::string> >   error_pages;
 
-        std::pair <unsigned short, std::string>                 redirection; // TODO : Check if multiple redirections are allowed.
+        std::pair <unsigned short, std::string>                 redirection;
 
         std::vector<std::string>                                allowed_methods;  
 
-        std::string                                             location;
+        std::string                                             location; // TODO
 
         std::string                                             root_directory;
 
@@ -61,7 +65,7 @@ class LocationContext {
 
         bool                                                    auto_index;
 
-        bool                                                    is_exact;
+        bool                                                    is_exact; // TODO
 };
 
 

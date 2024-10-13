@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 17:08:12 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/12 19:50:57 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/13 19:40:48 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 void    throw_config_parse_exception(std::string type, std::string token, std::string file_name, unsigned int line_num)
 {
     std::ostringstream  error_info;
-
+    
     if (type == "Unexpected")
     {
         error_info << "webserv : unexpected \"" + token + "\" in " + file_name + ":";
@@ -34,7 +34,7 @@ void    throw_config_parse_exception(std::string type, std::string token, std::s
         error_info <<  line_num;
         throw std::invalid_argument(error_info.str());
     }
-    else if (type == "EOF")
+    else if (type == "unclosed_ctx")
     {
         error_info << "webserv : unexpected end of file, expecting \"}\" in " + file_name + ":";
         error_info <<  line_num;
@@ -55,6 +55,18 @@ void    throw_config_parse_exception(std::string type, std::string token, std::s
     else if (type == "wrong args num")
     {
         error_info << "webserv : invalid number of arguments in \"" + token + "\" directive in " + file_name + ":";
+        error_info <<  line_num;
+        throw std::invalid_argument(error_info.str());
+    }
+    else if (type == "EOF")
+    {
+        error_info << "webserv : unexpected end of file, expecting \";\" or \"}\" in " + file_name + ":";
+        error_info <<  line_num;
+        throw std::invalid_argument(error_info.str());
+    }
+    else if (type == "no_openning")
+    { 
+        error_info << "webserv : directive " + token + " has no opening \"{\" in " + file_name + ":";
         error_info <<  line_num;
         throw std::invalid_argument(error_info.str());
     }
@@ -91,6 +103,12 @@ void    throw_wrong_value_exception(std::string directive, std::string wrong_val
     else if (directive == "allowed_methods")
     {
         error_info << "webserv : invalid method \"" + wrong_value + "\" in " + file_name + ":";
+        error_info <<  line_num;
+        throw std::invalid_argument(error_info.str());
+    }
+    else if (directive == "return")
+    {
+        error_info << "webserv : invalid return code \"" + wrong_value + "\" in " + file_name + ":";
         error_info <<  line_num;
         throw std::invalid_argument(error_info.str());
     }

@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 20:30:49 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/12 20:53:21 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/13 20:14:34 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 LocationContext::LocationContext( void )
 {
     this->is_exact = false;
+    redirection.first = 0; // to be able to determine if a redirection was provided or not
 }
 
 LocationContext::~LocationContext()
@@ -32,15 +33,9 @@ void    LocationContext::set_error_page(const std::pair <unsigned short, std::st
         {
             (*it).second = error_info.second;
 
-            // Testing 
-            std::cout << "error code : " << error_info.first << " page's has been changed to : " << error_info.second << std::endl;
-
             return ;
         }
     }
-
-    // Testing 
-    std::cout << "new error page has got stored : " << error_info.first << ": " << error_info.second << std::endl;
 
     this->error_pages.push_back(error_info);
 }
@@ -48,33 +43,21 @@ void    LocationContext::set_error_page(const std::pair <unsigned short, std::st
 void    LocationContext::set_root_directory( std::string root )
 {
     this->root_directory = root;
-
-    // Testing
-    std::cout << "Server's root : " << root << " has been set!" << std::endl;
 }
 
 void    LocationContext::set_cgi_extension(const std::string& extension)
 {
     this->cgi_extension = extension;
-    
-    // Testing 
-    std::cout << "New cgi_extension has been set: " << extension << std::endl;
 }
 
 void    LocationContext::set_upload_dir( std::string directory )
 {
     this->upload_dir = directory;
-
-    // Testing 
-    std::cout << "New directory has been set: " << directory << std::endl;
 }
 
 void    LocationContext::set_index( std::string index )
 {
     this->index = index;
-
-    // Testing 
-    std::cout << "New index has been set: " << index << std::endl;
 }
 
 void    LocationContext::set_auto_index(bool on_off)
@@ -83,17 +66,11 @@ void    LocationContext::set_auto_index(bool on_off)
         this->auto_index = true;
     else
         this->auto_index = false;
-
-    // Testing 
-    std::cout << "autoindex value has been stored! as " << this->auto_index << std::endl;
 }
 
 void    LocationContext::set_allowed_methods( std::vector<std::string> methods )
 {
     this->allowed_methods.assign(methods.begin(), methods.end());
-
-    // Testing 
-    std::cout << "New allowed-methods have been set: " << std::endl;
 }
 
 void    LocationContext::make_exact( void )
@@ -104,4 +81,55 @@ void    LocationContext::make_exact( void )
 void    LocationContext::set_redirection( std::pair<unsigned short, std::string> redirection_info )
 {
     this->redirection = redirection_info;
+}
+
+void    LocationContext::show_info()
+{
+
+    std::cout << "              " << "Location : " << "\"" << location << "\"";
+
+    if (is_exact)
+        std::cout << "(exact)" << std::endl;
+    else
+        std::cout << std::endl;
+
+    std::cout << "              " << "Root directory : " << "\"" << root_directory << "\"" << std::endl;
+
+    std::cout << "              " << "Allowed methods : ";
+    
+    for (auto it = allowed_methods.begin(); it < allowed_methods.end(); it++)
+    {
+        std::cout << "              " << "\"" << *it << "\"" << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "              " << "Index : " << "\"" << index << "\"" << std::endl;
+
+    std::cout << "              " << "Upload directory : " << "\"" << upload_dir << "\"" << std::endl;
+
+    std::cout << "              " << "Number of defined error pages : " << this->error_pages.size() << std::endl;
+    std::cout << "              " << "Error pages info : " << std::endl;
+
+    for (auto it = error_pages.begin(); it < error_pages.end(); it++)
+    {
+        std::cout << "              " << "Status code : " << "\"" << it->first << "\"" << " Path : " << "\"" << it->second << "\"" << std::endl;
+    }
+    
+    std::cout << "              " << "Defined CGI extension : " << "\"" << cgi_extension << "\"" << std::endl;
+
+    std::cout << "              " << "Auto index state : ";
+    if (auto_index)
+        std::cout << "              " << "\"ON\"" << std::endl;
+    else
+        std::cout << "              " << "\"OFF\"" << std::endl;
+    
+    if (redirection.first != 0)
+        std::cout << "              " << "Redirection tatus code: " << "\"" << redirection.first << "\"" << " | Redirection Path/Message : " << "\"" << redirection.second << "\"" << std::endl;
+    else
+        std::cout << "No redirections provided." << std::endl;
+}
+
+void    LocationContext::set_location( std::string location )
+{
+    this->location = location;
 }

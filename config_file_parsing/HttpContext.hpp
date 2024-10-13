@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/12 17:19:40 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/13 18:12:24 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,11 +38,21 @@ class HttpContext {
 
 
         /* The following method returns the latest inserted serverContext in the servers vector in order to store it's info. */
-        ServerContext&  get_latest_server( void );
+        ServerContext&                                          get_latest_server( void );
+        
 
+        /* Getters */
+        const std::vector<ServerContext>&                               get_servers( void ) const;
+        const std::vector<std::pair <unsigned short, std::string> >&    get_error_pages( void ) const;
+        const std::string&                                              get_cgi_extension( void ) const;
+        const bool&                                                     get_auto_index( void ) const;
+
+
+        // Testing
+        void    show_info();
     private :
 
-        std::vector<std::pair <unsigned short, std::string> >   error_pages;
+        std::vector<std::pair <unsigned short, std::string> >   error_pages; // instead of using pair make a struct
 
         std::vector<ServerContext>                              servers;
 
