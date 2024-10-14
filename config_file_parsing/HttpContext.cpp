@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 13:01:34 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/13 21:36:19 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/14 12:47:29 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,5 +120,6 @@ void    HttpContext::show_info()
     for (auto it = servers.begin(); it < servers.end(); it++)
     {
         it->show_info();
+        std::cout << "      " << std::endl << "------------------------------------" << std::endl;
     }
 }

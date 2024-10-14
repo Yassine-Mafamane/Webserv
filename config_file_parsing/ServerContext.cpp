@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 16:37:22 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/13 21:20:55 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/14 12:36:24 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,15 @@ ServerContext::ServerContext( void )
 {
     this->index = "index.html"; // Setting "index.html" as default index.
     this->port = 0;
+
+    root_is_set = false;
+    port_is_set = false;
+    index_is_set = false;
+    cgi_ext_is_set = false;
+    methods_is_set = false;
+    upl_dir_is_set = false;
+    auto_ind_is_set = false;
+    srv_names_is_set = false;
 }
 
 ServerContext::~ServerContext()

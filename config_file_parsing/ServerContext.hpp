@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:30 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/13 18:22:44 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/14 12:37:36 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,17 @@ class ServerContext {
 
     public :
         
+        /*  Flags to detect duplications in configuration file. */
+        
+        bool     srv_names_is_set;
+        bool     auto_ind_is_set;
+        bool     cgi_ext_is_set;
+        bool     methods_is_set;
+        bool     upl_dir_is_set;
+        bool     index_is_set;
+        bool     port_is_set;
+        bool     root_is_set;
+
         /* ServerContext Constructor */
         ServerContext( void );
 
@@ -68,7 +79,9 @@ class ServerContext {
 
         std::string                                             index;
 
-        bool                                                    auto_index;       
+        bool                                                    auto_index;
+
+        
 };
 
 

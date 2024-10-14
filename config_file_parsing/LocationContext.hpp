@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:25 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/13 20:11:32 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/14 12:39:24 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,16 @@
 class LocationContext {
 
     public :
+
+    /*  Flags to detect duplications in configuration file. */
+
+    bool     redirect_is_set;
+    bool     auto_ind_is_set;
+    bool     cgi_ext_is_set;
+    bool     methods_is_set;
+    bool     upl_dir_is_set;
+    bool     index_is_set;
+    bool     root_is_set;
 
     /* LocationContext Constructor */
     LocationContext( void );

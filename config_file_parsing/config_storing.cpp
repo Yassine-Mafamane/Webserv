@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 14:47:39 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/13 21:50:19 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/14 20:02:54 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ void    store_http_directives(HttpContext& http_config, std::queue<token_info>& 
     static bool    auto_ind_is_set;
 
     std::string token = tokens_queue.front().token;
-    std::cout << "-->" << token << std::endl;
     if (!is_http_ctx_dir(token))
     {
         // TODO : The following lines are repeated multiple times, create a function to do this repetetive job;
@@ -32,7 +31,6 @@ void    store_http_directives(HttpContext& http_config, std::queue<token_info>& 
     }
     else if (token == "server")
     {
-            std::cout << "gg" << std::endl;
 
         tokens_queue.pop();
         store_config(http_config, tokens_queue, file_name, "server");
@@ -63,16 +61,9 @@ void    store_http_directives(HttpContext& http_config, std::queue<token_info>& 
 
 void    store_serv_directives(HttpContext& http_config, std::queue<token_info>& tokens_queue, std::string file_name)
 {
-    ServerContext   server = http_config.get_latest_server();
+    ServerContext&   server = http_config.get_latest_server();
 
-    static bool     srv_names_is_set;
-    static bool     auto_ind_is_set;
-    static bool     cgi_ext_is_set;
-    static bool     methods_is_set;
-    static bool     upl_dir_is_set;
-    static bool     index_is_set;
-    static bool     port_is_set;
-    static bool     root_is_set;
+
 
     std::string token = tokens_queue.front().token;
 
@@ -114,12 +105,12 @@ void    store_serv_directives(HttpContext& http_config, std::queue<token_info>& 
     }
     else if (token == "autoindex")
     {
-        if (auto_ind_is_set)
+        if (server.auto_ind_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
 
         server.set_auto_index(extract_autoindex_value(tokens_queue, file_name));
 
-        auto_ind_is_set = true;
+        server.auto_ind_is_set = true;
     }
     else if (token == "error_page")
     {
@@ -127,82 +118,72 @@ void    store_serv_directives(HttpContext& http_config, std::queue<token_info>& 
     }
     else if (token == "cgi_extention")
     {
-        if (cgi_ext_is_set)
+        if (server.cgi_ext_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
 
         server.set_cgi_extension(extract_cgi_extension(tokens_queue, file_name));
 
-        cgi_ext_is_set = true;
+        server.cgi_ext_is_set = true;
     }
     else if (token == "listen")
     {
-        if (port_is_set)
+        if (server.port_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
         
         server.set_port(extract_port_number(tokens_queue, file_name));
 
-        port_is_set = true;
+        server.port_is_set = true;
     }
     else if (token == "root")
     {
-        if (root_is_set)
+        if (server.root_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
         
         server.set_root_directory(extract_root_dir(tokens_queue, file_name));
 
-        root_is_set = true;
+        server.root_is_set = true;
     }
     else if (token == "upload_dir")
     {
-        if (upl_dir_is_set)
+        if (server.upl_dir_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
         
         server.set_upload_dir(extract_upload_dir(tokens_queue, file_name));
 
-        upl_dir_is_set = true;
+        server.upl_dir_is_set = true;
     }
     else if (token == "index")
     {
-        if (index_is_set)
+        if (server.index_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
         
         server.set_upload_dir(extract_index(tokens_queue, file_name));
 
-        index_is_set = true;
+        server.index_is_set = true;
     }
     else if (token == "server_names")
     {
-        if (srv_names_is_set)
+        if (server.srv_names_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
         
         server.set_server_names(extract_srv_names(tokens_queue, file_name));
 
-        srv_names_is_set = true;
+        server.srv_names_is_set = true;
     }
     else if (token == "allowed_methods")
     {
-        if (methods_is_set)
+        if (server.methods_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
 
         server.set_allowed_methods(extract_allowed_methods(tokens_queue, file_name));
 
-        methods_is_set = true;
+        server.methods_is_set = true;
     }
 }
 
 void    store_location_directives(LocationContext& location, std::queue<token_info>& tokens_queue, std::string file_name)
 {
-    static bool     redirect_is_set;
-    static bool     auto_ind_is_set;
-    static bool     cgi_ext_is_set;
-    static bool     methods_is_set;
-    static bool     upl_dir_is_set;
-    static bool     index_is_set;
-    static bool     root_is_set;
-
-    std::string token = tokens_queue.front().token;
-
-    
+    std::string token = tokens_queue.front().token;   
 
     if (!is_location_ctx_dir(token))
     {
@@ -215,12 +196,12 @@ void    store_location_directives(LocationContext& location, std::queue<token_in
     }
     else if (token == "autoindex")
     {
-        if (auto_ind_is_set)
+        if (location.auto_ind_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
 
         location.set_auto_index(extract_autoindex_value(tokens_queue, file_name));
 
-        auto_ind_is_set = true;
+        location.auto_ind_is_set = true;
     }
     else if (token == "error_page")
     {
@@ -228,57 +209,57 @@ void    store_location_directives(LocationContext& location, std::queue<token_in
     }
     else if (token == "cgi_extention")
     {
-        if (cgi_ext_is_set)
+        if (location.cgi_ext_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
 
         location.set_cgi_extension(extract_cgi_extension(tokens_queue, file_name));
 
-        cgi_ext_is_set = true;
+        location.cgi_ext_is_set = true;
     }
      else if (token == "root")
     {
-        if (root_is_set)
+        if (location.root_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
         
         location.set_root_directory(extract_root_dir(tokens_queue, file_name));
 
-        root_is_set = true;
+        location.root_is_set = true;
     }
     else if (token == "upload_dir")
     {
-        if (upl_dir_is_set)
+        if (location.upl_dir_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
         
         location.set_upload_dir(extract_upload_dir(tokens_queue, file_name));
 
-        upl_dir_is_set = true;
+        location.upl_dir_is_set = true;
     }
     else if (token == "index")
     {
-        if (index_is_set)
+        if (location.index_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
         
         location.set_upload_dir(extract_index(tokens_queue, file_name));
 
-        index_is_set = true;
+        location.index_is_set = true;
     }
     else if (token == "allowed_methods")
     {
-        if (methods_is_set)
+        if (location.methods_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
 
         location.set_allowed_methods(extract_allowed_methods(tokens_queue, file_name));
 
-        methods_is_set = true;
+        location.methods_is_set = true;
     }
     else if (token == "return")
     {
-        if (redirect_is_set)
+        if (location.redirect_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
         
         location.set_redirection(extract_redirection_info(tokens_queue, file_name));
 
-        redirect_is_set = true;
+        location.redirect_is_set = true;
     }
     
 }
@@ -286,9 +267,8 @@ void    store_location_directives(LocationContext& location, std::queue<token_in
 void    store_config(HttpContext& http_config, std::queue<token_info>& tokens_queue, std::string file_name, std::string context)
 {
     bool    is_inside_serv = false;
+    bool    is_inside_loc = false;
     
-    std::cout << "Context: " << context << std::endl;
-
     if (tokens_queue.front().token != "{")
     {
         throw_config_parse_exception("no_openning", context, file_name, tokens_queue.front().line_num);

@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 21:39:03 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/11 21:42:18 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/14 17:39:53 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,5 +18,5 @@
 
 
 bool is_all_digits(const std::string& str);
-
+bool    is_space(char c);
 #endif

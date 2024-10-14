@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 20:30:49 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/13 20:14:34 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/14 12:40:24 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,14 @@ LocationContext::LocationContext( void )
 {
     this->is_exact = false;
     redirection.first = 0; // to be able to determine if a redirection was provided or not
+
+    root_is_set = false;
+    index_is_set = false;
+    cgi_ext_is_set = false;
+    methods_is_set = false;
+    upl_dir_is_set = false;
+    auto_ind_is_set = false;
+    redirect_is_set = false;
 }
 
 LocationContext::~LocationContext()

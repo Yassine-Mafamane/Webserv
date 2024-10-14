@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 15:44:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/13 21:26:56 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/14 18:17:07 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,7 @@ unsigned short  extract_port_number(std::queue<token_info>& tokens_queue, std::s
 
     if ((token == ";" || token == "{" || token == "}") && tokens_queue.front().is_sep)
         throw_config_parse_exception("Unexpected", token, file_name, tokens_queue.front().line_num);
-    else if (!is_all_digits(token) || (token.length() != 4 && token.length() != 5) || token < "1024" || token > "49151")
+    else if (!is_all_digits(token) || (token.length() != 4 && token.length() != 5) || (token.length() == 4 && token < "1024" ) || (token.length() == 5 && token > "49151"))
         throw_wrong_value_exception("listen", token, file_name, tokens_queue.front().line_num);
     else
         port_num = std::stoi(token);
@@ -231,7 +231,9 @@ std::string extract_index(std::queue<token_info>& tokens_queue, std::string file
     else if ((token == "{" || token == "}") && tokens_queue.front().is_sep)
         throw_config_parse_exception("unterminated", "index", file_name, tokens_queue.front().line_num);
     else
-        throw_wrong_value_exception("wrong args num", "index", file_name, tokens_queue.front().line_num);
+    {
+        throw_config_parse_exception("wrong args num", "index", file_name, tokens_queue.front().line_num);
+    }
 
     return index;  // this line is added to silence the warnings at compilation.
 }
