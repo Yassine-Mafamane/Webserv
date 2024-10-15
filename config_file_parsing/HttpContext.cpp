@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 13:01:34 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/14 12:47:29 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/15 10:26:00 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ void    HttpContext::show_info()
     std::cout << "Number of defined error pages : " << this->error_pages.size() << std::endl;
     std::cout << "Error pages info : " << std::endl;
 
-    for (auto it = error_pages.begin(); it < error_pages.end(); it++)
+    for (std::vector<std::pair <unsigned short, std::string> >::iterator it = error_pages.begin(); it < error_pages.end(); it++)
     {
         std::cout << "Status code : " << "\"" << it->first << "\"" << " Path : " << "\"" << it->second << "\"" << std::endl;
     }
@@ -117,7 +117,7 @@ void    HttpContext::show_info()
     std::cout << "Number of defined server contexts : " << this->servers.size() << std::endl;
     std::cout << "Servers info : " << std::endl;
     
-    for (auto it = servers.begin(); it < servers.end(); it++)
+    for (std::vector<ServerContext>::iterator it = servers.begin(); it < servers.end(); it++)
     {
         it->show_info();
         std::cout << "      " << std::endl << "------------------------------------" << std::endl;

@@ -1,6 +1,6 @@
 CPP = c++
 
-FLAGS = #-Wall -Wextra -Werror -std=c++98
+FLAGS = -Wall -Wextra -Werror -std=c++98
 
 CONFIG_FILE_PARSING_HEADER_FILES =  webserv.hpp
 

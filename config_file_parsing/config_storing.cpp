@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 14:47:39 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/14 20:02:54 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/15 10:19:55 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -267,7 +267,6 @@ void    store_location_directives(LocationContext& location, std::queue<token_in
 void    store_config(HttpContext& http_config, std::queue<token_info>& tokens_queue, std::string file_name, std::string context)
 {
     bool    is_inside_serv = false;
-    bool    is_inside_loc = false;
     
     if (tokens_queue.front().token != "{")
     {

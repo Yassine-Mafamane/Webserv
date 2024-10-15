@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:04:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/14 20:03:32 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/15 10:28:32 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,18 @@
 
 token_info normalize_token(std::string token, unsigned int line_num)
 {
+    token_info  info;
     bool        removed_one;
     bool        escaped;
     char        quote;
 
     if (token == ";" || token == "{" || token == "}")
-        return {token, line_num, true};
+    {
+        info.token = token;
+        info.line_num = line_num;
+        info.is_sep = true;
+        return info;
+    }
 
     removed_one = false;
     escaped = false;
@@ -87,7 +93,11 @@ token_info normalize_token(std::string token, unsigned int line_num)
         }
     }
 
-    return {token, line_num, false};
+    info.token = token;
+    info.line_num = line_num;
+    info.is_sep = false;
+
+    return info;
 }
 
 std::string get_next_chunk(std::string token)
@@ -199,7 +209,7 @@ char    quote_first(std::string str)
 
 void    remove_leading_spaces(std::stringstream& strm)
 {
-    while ((strm.tellg() != -1) && (strm.tellg() != strm.str().length()) && (strm.peek() == 32 || (strm.peek() >= 9 && strm.peek() <= 13)))
+    while ((strm.tellg() != -1) && ((size_t) strm.tellg() != strm.str().length()) && (strm.peek() == 32 || (strm.peek() >= 9 && strm.peek() <= 13)))
     {
         char ch;
         strm.get(ch);
@@ -240,7 +250,7 @@ std::string get_quoted_string(std::stringstream& strm, char quote)
         char c;
 
         // append untill the next space / quote (if it s a quote append it so that the other function calls again)
-        while (strm.tellg() != -1 && strm.tellg() != strm.str().length()) // find out why it fails when i dont do strm.str.length in case there is only "qeqwe"
+        while ((strm.tellg() != -1) && ((size_t) strm.tellg() != strm.str().length())) // find out why it fails when i dont do strm.str.length in case there is only "qeqwe"
         {
             if (is_space(strm.peek()))
             {
@@ -280,7 +290,7 @@ void    tokenize_config(std::queue<token_info>& tokens_queue, std::string file_n
 
         remove_leading_spaces(strm);
 
-        while ((strm.tellg() != -1) && (strm.tellg() != strm.str().length())) // the second condition is for "qeqwe"
+        while ((strm.tellg() != -1) && ((size_t) strm.tellg() != strm.str().length())) // the second condition is for "qeqwe"
         {
             remove_leading_spaces(strm);
             
@@ -292,7 +302,7 @@ void    tokenize_config(std::queue<token_info>& tokens_queue, std::string file_n
                     token += get_quoted_string(strm, quote);
                     if (has_unmatched_quote(token))
                     {
-                        if (strm.tellg() == -1 || (strm.tellg() == strm.str().length()))
+                        if ((strm.tellg() == -1) || ((size_t) strm.tellg() == strm.str().length()))
                         {
                             token += '\n';
                             if (!std::getline(file, line))
@@ -330,24 +340,24 @@ void    config_tokenizer(std::string file_name)
         std::cerr << "empty" << std::endl;
         exit (1);
     }
-    // if (tokens_queue.front().token != "http")
-    // {
-    //     if (tokens_queue.front().token == ";" || tokens_queue.front().token == "{" || tokens_queue.front().token == "}")
-    //         throw_config_parse_exception("Unexpected", tokens_queue.front().token, file_name, tokens_queue.front().line_num);
-    //     else if (is_http_ctx_dir(tokens_queue.front().token) || is_server_ctx_dir(tokens_queue.front().token) || is_location_ctx_dir(tokens_queue.front().token))
-    //         throw_config_parse_exception("Not allowed", tokens_queue.front().token, file_name, tokens_queue.front().line_num);
-    //     else
-    //         throw_config_parse_exception("Unknown", tokens_queue.front().token, file_name, tokens_queue.front().line_num);
-    // }
-    // tokens_queue.pop();
-
-    while (!tokens_queue.empty())
+    if (tokens_queue.front().token != "http")
     {
-        std::cout << tokens_queue.front().token << std::endl;
-        tokens_queue.pop();
+        if (tokens_queue.front().token == ";" || tokens_queue.front().token == "{" || tokens_queue.front().token == "}")
+            throw_config_parse_exception("Unexpected", tokens_queue.front().token, file_name, tokens_queue.front().line_num);
+        else if (is_http_ctx_dir(tokens_queue.front().token) || is_server_ctx_dir(tokens_queue.front().token) || is_location_ctx_dir(tokens_queue.front().token))
+            throw_config_parse_exception("Not allowed", tokens_queue.front().token, file_name, tokens_queue.front().line_num);
+        else
+            throw_config_parse_exception("Unknown", tokens_queue.front().token, file_name, tokens_queue.front().line_num);
     }
+    tokens_queue.pop();
 
-    // store_config(http_config, tokens_queue, file_name, "http");
+    // while (!tokens_queue.empty())
+    // {
+    //     std::cout << tokens_queue.front().token << std::endl;
+    //     tokens_queue.pop();
+    // }
 
-    // http_config.show_info();
+    store_config(http_config, tokens_queue, file_name, "http");
+
+    http_config.show_info();
 }

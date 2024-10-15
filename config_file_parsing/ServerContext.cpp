@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 16:37:22 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/14 12:36:24 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/15 10:26:17 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ void ServerContext::show_info()
 {
     std::cout << "      " << "Server names : ";
 
-    for (auto it = server_names.begin(); it < server_names.end(); it++)
+    for (std::vector<std::string>::iterator it = server_names.begin(); it < server_names.end(); it++)
     {
         std::cout << "      " << "\"" << *it << "\""  << " ";
     }
@@ -133,7 +133,8 @@ void ServerContext::show_info()
 
     std::cout << "      " << "Allowed methods : ";
     
-    for (auto it = allowed_methods.begin(); it < allowed_methods.end(); it++)
+
+    for (std::vector<std::string>::iterator it = allowed_methods.begin(); it < allowed_methods.end(); it++)
     {
         std::cout << "      " << "\"" << *it << "\"" << " ";
     }
@@ -146,7 +147,7 @@ void ServerContext::show_info()
     std::cout << "      " << "Number of defined error pages : " << this->error_pages.size() << std::endl;
     std::cout << "      " << "Error pages info : " << std::endl;
 
-    for (auto it = error_pages.begin(); it < error_pages.end(); it++)
+    for (std::vector<std::pair <unsigned short, std::string> >::iterator it = error_pages.begin(); it < error_pages.end(); it++)
     {
         std::cout << "      " << "Status code : " << "\"" << it->first << "\"" << " Path : " << "\"" << it->second << "\"" << std::endl;
     }
@@ -162,7 +163,7 @@ void ServerContext::show_info()
     std::cout << "      " << "Number of defined location contexts : " << this->locations.size() << std::endl;
     std::cout << "      " << "Locations info : " << std::endl;
     
-    for (auto it = locations.begin(); it < locations.end(); it++)
+    for (std::vector<LocationContext>::iterator it = locations.begin(); it < locations.end(); it++)
     {
         it->show_info();
     }

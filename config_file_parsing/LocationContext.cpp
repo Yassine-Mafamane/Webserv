@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 20:30:49 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/14 12:40:24 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/15 10:27:03 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ void    LocationContext::show_info()
 
     std::cout << "              " << "Allowed methods : ";
     
-    for (auto it = allowed_methods.begin(); it < allowed_methods.end(); it++)
+    for (std::vector<std::string>::iterator it = allowed_methods.begin(); it < allowed_methods.end(); it++)
     {
         std::cout << "              " << "\"" << *it << "\"" << " ";
     }
@@ -118,7 +118,7 @@ void    LocationContext::show_info()
     std::cout << "              " << "Number of defined error pages : " << this->error_pages.size() << std::endl;
     std::cout << "              " << "Error pages info : " << std::endl;
 
-    for (auto it = error_pages.begin(); it < error_pages.end(); it++)
+    for (std::vector<std::pair <unsigned short, std::string> >::iterator it = error_pages.begin(); it < error_pages.end(); it++)
     {
         std::cout << "              " << "Status code : " << "\"" << it->first << "\"" << " Path : " << "\"" << it->second << "\"" << std::endl;
     }
