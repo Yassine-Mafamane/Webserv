@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   config_storing.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 14:47:39 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/15 10:19:55 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/15 10:54:49 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,6 @@ void    store_http_directives(HttpContext& http_config, std::queue<token_info>& 
 void    store_serv_directives(HttpContext& http_config, std::queue<token_info>& tokens_queue, std::string file_name)
 {
     ServerContext&   server = http_config.get_latest_server();
-
-
 
     std::string token = tokens_queue.front().token;
 
@@ -130,7 +128,7 @@ void    store_serv_directives(HttpContext& http_config, std::queue<token_info>& 
         if (server.port_is_set)
             throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
         
-        server.set_port(extract_port_number(tokens_queue, file_name));
+        server.set_ports(extract_port_number(tokens_queue, file_name));
 
         server.port_is_set = true;
     }

@@ -1,0 +1,49 @@
+Major HTTP context info :
+Number of defined error pages : 2
+Error pages info : 
+Status code : "599" Path : "700.html"
+Status code : "500" Path : "999.html"
+Defined CGI extension : ""
+Auto index state : "OFF"
+Number of defined server contexts : 1
+Servers info : 
+      Server names :       "  \"example\'.com "       "exa;mple.co" 
+      Port numbers : "8888" "8999" 
+      Root directory : "/etc/nginx  ww"
+      Allowed methods :       "GET" 
+      Index : "index.html"
+      Upload directory : ""
+      Number of defined error pages : 2
+      Error pages info : 
+      Status code : "599" Path : "700.html"
+      Status code : "500" Path : "999.html"
+      Defined CGI extension : ""
+      Auto index state :       "OFF"
+      Number of defined location contexts : 2
+      Locations info : 
+              Location : "/folder/index/"
+              Root directory : "/bin/"
+              Allowed methods :               "GET" 
+              Index : "index.html"
+              Upload directory : "/uploads"
+              Number of defined error pages : 2
+              Error pages info : 
+              Status code : "599" Path : "700.html"
+              Status code : "500" Path : "999.html"
+              Defined CGI extension : ""
+              Auto index state :               "OFF"
+              Redirection tatus code: "404" | Redirection Path/Message : ""
+              Location : "/folder/"
+              Root directory : "/etc/nginx  ww"
+              Allowed methods :               "GET" 
+              Index : "index.html"
+              Upload directory : ""
+              Number of defined error pages : 2
+              Error pages info : 
+              Status code : "599" Path : "OTHER.html"
+              Status code : "500" Path : "999.html"
+              Defined CGI extension : ""
+              Auto index state :               "OFF"
+No redirections provided.
+      
+------------------------------------

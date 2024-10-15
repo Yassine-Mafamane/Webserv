@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerContext.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 16:37:22 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/15 10:26:17 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/15 10:52:38 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 ServerContext::ServerContext( void )
 {
     this->index = "index.html"; // Setting "index.html" as default index.
-    this->port = 0;
 
     root_is_set = false;
     port_is_set = false;
@@ -69,9 +68,9 @@ void   ServerContext::set_new_location( void )
     this->locations.push_back(new_location);
 }
 
-void    ServerContext::set_port( unsigned short port )
+void    ServerContext::set_ports( std::vector<unsigned short> ports )
 {
-    this->port = port;
+    this->ports.assign(ports.begin(), ports.end());
 }
 
 void    ServerContext::set_root_directory( std::string root )
@@ -126,8 +125,13 @@ void ServerContext::show_info()
         std::cout << "      " << "\"" << *it << "\""  << " ";
     }
     std::cout << std::endl;
+    
+    std::cout << "      " << "Port numbers : ";
 
-    std::cout << "      " << "Port number : " << "\""  << port << "\"" << std::endl;
+    for (std::vector<unsigned short>::iterator it = ports.begin(); it < ports.end(); it++)
+            std::cout << "\"" << *it << "\" ";
+
+    std::cout << std::endl;
 
     std::cout << "      " << "Root directory : " << "\"" << root_directory << "\"" << std::endl;
 

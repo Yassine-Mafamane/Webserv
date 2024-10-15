@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerContext.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:30 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/14 12:37:36 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/15 10:51:33 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ class ServerContext {
         /* Setters */
         void    set_error_page      ( const std::pair <unsigned short, std::string>& error_info );
         void    set_new_location    ( void );
-        void    set_port            ( unsigned short port );
+        void    set_ports           ( std::vector<unsigned short> ports );
         void    set_root_directory  ( std::string root );
         void    set_cgi_extension   ( const std::string& extension );
         void    set_upload_dir      ( std::string directory );
@@ -69,7 +69,7 @@ class ServerContext {
 
         std::vector<std::string>                                allowed_methods;
 
-        unsigned    short                                       port;
+        std::vector<unsigned short>                             ports;
 
         std::string                                             root_directory;
 

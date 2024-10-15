@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   config_values_extracter.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 15:44:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/14 18:17:07 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/15 11:10:28 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,35 +118,41 @@ std::string extract_cgi_extension(std::queue<token_info>& tokens_queue, std::str
     return cgi_extension;  // this line is added to silence the warnings at compilation.
 }
 
-unsigned short  extract_port_number(std::queue<token_info>& tokens_queue, std::string file_name)
+std::vector<unsigned short>  extract_port_number(std::queue<token_info>& tokens_queue, std::string file_name)
 {
-    unsigned short  port_num;
-    std::string     token;
+    std::vector<unsigned short>  port_nums;
+    std::string                  token;
 
     tokens_queue.pop();
     token = tokens_queue.front().token;
 
     if ((token == ";" || token == "{" || token == "}") && tokens_queue.front().is_sep)
         throw_config_parse_exception("Unexpected", token, file_name, tokens_queue.front().line_num);
-    else if (!is_all_digits(token) || (token.length() != 4 && token.length() != 5) || (token.length() == 4 && token < "1024" ) || (token.length() == 5 && token > "49151"))
-        throw_wrong_value_exception("listen", token, file_name, tokens_queue.front().line_num);
-    else
-        port_num = std::stoi(token);
+    
+    
+    while (!tokens_queue.empty() && token != ";" && token != "{" && token != "}")
+    {
+        if (!is_all_digits(token) || (token.length() != 4 && token.length() != 5) || (token.length() == 4 && token < "1024" ) || (token.length() == 5 && token > "49151"))
+            throw_wrong_value_exception("listen", token, file_name, tokens_queue.front().line_num);
+        else
+        {
+            port_nums.push_back(std::stoi(token));
+            tokens_queue.pop();
+            token = tokens_queue.front().token;
+        }
+    }
 
-    tokens_queue.pop();
-    token = tokens_queue.front().token;
+    if (tokens_queue.empty())
+        throw_config_parse_exception("unterminated", "listen", file_name, tokens_queue.front().line_num);
 
     if (token == ";" && tokens_queue.front().is_sep)
-    {
         tokens_queue.pop();
-        return port_num;
-    }
     else if ((token == "{" || token == "}") && tokens_queue.front().is_sep)
         throw_config_parse_exception("unterminated", "listen", file_name, tokens_queue.front().line_num);
     else
         throw_wrong_value_exception("wrong args num", "listen", file_name, tokens_queue.front().line_num);
 
-    return port_num;  // this line is added to silence the warnings at compilation.
+    return port_nums;  // this line is added to silence the warnings at compilation.
 }
 
 std::string    extract_root_dir(std::queue<token_info>& tokens_queue, std::string file_name)
@@ -249,18 +255,19 @@ std::vector<std::string>    extract_srv_names(std::queue<token_info>& tokens_que
     if ((token == ";" || token == "{" || token == "}") && tokens_queue.front().is_sep)
         throw_config_parse_exception("Unexpected", token, file_name, tokens_queue.front().line_num);
 
-    while (token != ";" && token != "{" && token != "}")
+    while (!tokens_queue.empty() && token != ";" && token != "{" && token != "}")
     {
         names.push_back(token);
-
         tokens_queue.pop();
         token = tokens_queue.front().token;
     }
 
+    if (tokens_queue.empty())
+        throw_config_parse_exception("unterminated", "server_names", file_name, tokens_queue.front().line_num);
+
     if (token == ";" && tokens_queue.front().is_sep)
     {
         tokens_queue.pop();
-        return names;
     }
     else if ((token == "{" || token == "}") && tokens_queue.front().is_sep)
         throw_config_parse_exception("unterminated", "server_names", file_name, tokens_queue.front().line_num);
@@ -279,7 +286,7 @@ std::vector<std::string>    extract_allowed_methods(std::queue<token_info>& toke
     if ((token == ";" || token == "{" || token == "}") && tokens_queue.front().is_sep)
         throw_config_parse_exception("Unexpected", token, file_name, tokens_queue.front().line_num);
 
-    while (token != ";" && token != "{" && token != "}")
+    while (!tokens_queue.empty() && token != ";" && token != "{" && token != "}")
     {
         if (token != "GET" && token != "POST" && token != "DELETE" && token != "HEAD")
             throw_wrong_value_exception("allowed_methods", token, file_name, tokens_queue.front().line_num);
@@ -291,10 +298,12 @@ std::vector<std::string>    extract_allowed_methods(std::queue<token_info>& toke
         }
     }
 
+    if (tokens_queue.empty())
+        throw_config_parse_exception("unterminated", "allowed_methods", file_name, tokens_queue.front().line_num);
+
     if (token == ";" && tokens_queue.front().is_sep)
     {
         tokens_queue.pop();
-        return methods;
     }
     else if ((token == "{" || token == "}") && tokens_queue.front().is_sep)
         throw_config_parse_exception("unterminated", "allowed_methods", file_name, tokens_queue.front().line_num);

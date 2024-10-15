@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   config_parse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:09:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/13 18:09:09 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/15 10:54:28 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void    throw_wrong_value_exception(std::string directive, std::string wrong_val
 std::string extract_cgi_extension(std::queue<token_info>& tokens_queue, std::string file_name);
 std::pair <unsigned short, std::string> extract_error_page_info(std::queue<token_info>& tokens_queue, std::string file_name);
 bool    extract_autoindex_value(std::queue<token_info>& tokens_queue, std::string file_name);
-unsigned short  extract_port_number(std::queue<token_info>& tokens_queue, std::string file_name);
+std::vector<unsigned short>  extract_port_number(std::queue<token_info>& tokens_queue, std::string file_name);
 std::string    extract_root_dir(std::queue<token_info>& tokens_queue, std::string file_name);
 std::string extract_upload_dir(std::queue<token_info>& tokens_queue, std::string file_name);
 std::string extract_index(std::queue<token_info>& tokens_queue, std::string file_name);
