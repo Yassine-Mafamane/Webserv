@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 17:12:39 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/12 20:41:14 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/25 05:42:08 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 bool    is_http_ctx_dir(std::string directive)
 {
     return  (directive == "error_page" || directive == "server" || directive == "cgi_extention"
-            || directive == "autoindex");
+            || directive == "autoindex" || directive == "client_max_body_size");
 }
 
 bool    is_server_ctx_dir(std::string directive)
@@ -23,7 +23,8 @@ bool    is_server_ctx_dir(std::string directive)
     return  (directive == "error_page" || directive == "location" || directive == "listen"
             || directive == "root" || directive == "upload_dir" || directive == "index"
             || directive == "server_names" || directive == "cgi_extention"
-            || directive == "autoindex" || directive == "allowed_methods");
+            || directive == "autoindex" || directive == "allowed_methods"
+            || directive == "host");
 }
 
 bool    is_location_ctx_dir(std::string directive)

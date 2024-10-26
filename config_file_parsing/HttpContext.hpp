@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/13 18:12:24 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/25 06:04:40 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "../macros_definition.hpp"
 #include "ServerContext.hpp"
 
 class HttpContext {
@@ -33,6 +34,7 @@ class HttpContext {
         void    set_new_server      ( void ); //  This method creates a new Server Context when a new server directive is found in the configuration file.
         void    set_cgi_extension   ( const std::string& extension );
         void    set_auto_index      ( bool on_off );
+        void    set_max_body_size   ( size_t limit );
 
         /* Getters */
 
@@ -50,6 +52,7 @@ class HttpContext {
 
         // Testing
         void    show_info();
+
     private :
 
         std::vector<std::pair <unsigned short, std::string> >   error_pages; // instead of using pair make a struct
@@ -57,6 +60,8 @@ class HttpContext {
         std::vector<ServerContext>                              servers;
 
         std::string                                             cgi_extension;
+
+        size_t                                                  max_body_size;
 
         bool                                                    auto_index;
 

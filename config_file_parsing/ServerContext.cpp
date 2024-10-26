@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerContext.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 16:37:22 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/15 10:52:38 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/10/25 22:56:57 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ ServerContext::ServerContext( void )
 {
     this->index = "index.html"; // Setting "index.html" as default index.
 
+    host_is_set = false;
     root_is_set = false;
     port_is_set = false;
     index_is_set = false;
@@ -111,13 +112,80 @@ void    ServerContext::set_allowed_methods( std::vector<std::string> methods )
     this->allowed_methods.assign(methods.begin(), methods.end());
 }
 
+void    ServerContext::set_host( std::string host )
+{
+    this->host = host;
+}
+
+
 LocationContext&  ServerContext::get_latest_location( void )
 {
     return this->locations.back();
 }
 
+
+/* Getters */
+
+const std::vector<std::pair <unsigned short, std::string> >& ServerContext::get_error_pages( void ) const
+{
+    return this->error_pages;
+}
+
+const std::vector<LocationContext>& ServerContext::get_locations( void ) const
+{
+    return this->locations;
+}
+
+const std::vector<std::string>& ServerContext::get_server_names( void ) const
+{
+    return this->server_names;
+}
+
+const std::vector<std::string>& ServerContext::get_allowed_methods( void ) const
+{
+    return this->allowed_methods;
+}
+
+const std::vector<unsigned short>& ServerContext::get_ports( void ) const
+{
+    return this->ports;
+}
+
+const std::string& ServerContext::get_root_directory( void ) const
+{
+    return this->root_directory;
+}
+
+const std::string& ServerContext::get_cgi_extension( void ) const
+{
+    return this->cgi_extension;
+}
+
+const std::string& ServerContext::get_upload_dir( void ) const
+{
+    return this->upload_dir;
+}
+
+const std::string& ServerContext::get_index( void ) const
+{
+    return this->index;
+}
+
+const std::string& ServerContext::get_host( void ) const
+{
+    return this->host;
+}
+
+const bool& ServerContext::get_auto_index( void ) const
+{
+    return this->auto_index;
+}
+
+
+
 void ServerContext::show_info()
 {
+    std::cout << "      host : " << host << std::endl;
     std::cout << "      " << "Server names : ";
 
     for (std::vector<std::string>::iterator it = server_names.begin(); it < server_names.end(); it++)

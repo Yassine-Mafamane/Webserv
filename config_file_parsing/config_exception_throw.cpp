@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 17:08:12 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/14 18:17:21 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/25 05:58:18 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,12 @@ void    throw_wrong_value_exception(std::string directive, std::string wrong_val
     else if (directive == "return")
     {
         error_info << "webserv : invalid return code \"" + wrong_value + "\" in " + file_name + ":";
+        error_info <<  line_num;
+        throw std::invalid_argument(error_info.str());
+    }
+    else if (directive == "max_body_size")
+    {
+        error_info << "webserv : value \"" + wrong_value + "\" must be a number between 0 and 12500000000 in " + file_name + ":";
         error_info <<  line_num;
         throw std::invalid_argument(error_info.str());
     }

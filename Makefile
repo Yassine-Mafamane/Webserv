@@ -24,7 +24,7 @@ $(NAME) : $(CONFIG_PARSE_OBJECTS) $(MAIN_OBJECTS)
 
 config_file_parsing/%.o :	config_file_parsing/%.cpp config_file_parsing/HttpContext.hpp \
 							config_file_parsing/ServerContext.hpp config_file_parsing/LocationContext.hpp \
-							config_file_parsing/config_parse.hpp
+							config_file_parsing/config_parse.hpp macros_difinition.hpp
 	$(CPP) $(FLAGS) -c $< -o $@
 
 %.o : %.cpp webserv.hpp

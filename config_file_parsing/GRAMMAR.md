@@ -20,6 +20,8 @@
                     | 'server_names'
                     | 'allowed_methods'
                     | 'return'
+                    | 'host'
+                    | 'client_max_body_size'
 
 # Using the '=' in the location uri will help optimizing the search of the appropriate block for the requested uri
 # Location will be spliten to two categories : one's having an exact URI (using '=') and others having prefix match

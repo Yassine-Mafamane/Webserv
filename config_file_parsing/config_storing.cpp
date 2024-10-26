@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   config_storing.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 14:47:39 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/15 10:54:49 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/10/25 06:16:23 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,9 @@
 void    store_http_directives(HttpContext& http_config, std::queue<token_info>& tokens_queue, std::string file_name)
 {
     /* The following flags are used to track duplicate directives */
-    static bool    cgi_ext_is_set;
-    static bool    auto_ind_is_set;
+    static bool     cgi_ext_is_set;
+    static bool     auto_ind_is_set;
+    static bool     max_body_is_set;
 
     std::string token = tokens_queue.front().token;
     if (!is_http_ctx_dir(token))
@@ -56,6 +57,15 @@ void    store_http_directives(HttpContext& http_config, std::queue<token_info>& 
         http_config.set_cgi_extension(extract_cgi_extension(tokens_queue, file_name));
 
         cgi_ext_is_set = true;
+    }
+    else if (token == "client_max_body_size")
+    {
+        if (max_body_is_set)
+            throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
+        
+        http_config.set_max_body_size(extract_max_body_size(tokens_queue, file_name));
+        
+        max_body_is_set = true;
     }
 }
 
@@ -176,6 +186,15 @@ void    store_serv_directives(HttpContext& http_config, std::queue<token_info>& 
         server.set_allowed_methods(extract_allowed_methods(tokens_queue, file_name));
 
         server.methods_is_set = true;
+    }
+    else if (token == "host")
+    {
+        if (server.host_is_set)
+            throw_config_parse_exception("duplication", token, file_name, tokens_queue.front().line_num);
+        
+        server.set_host(extract_host_name(tokens_queue, file_name));
+
+        server.host_is_set = true;
     }
 }
 

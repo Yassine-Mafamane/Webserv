@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 13:01:34 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/15 10:26:00 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/25 22:39:04 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 HttpContext::HttpContext( void )
 {
     this->auto_index = false;
+    this->max_body_size = DEFAULT_MAX_BODY_SIZE;
 }
 
 HttpContext::~HttpContext()
@@ -69,6 +70,11 @@ void   HttpContext::set_new_server( void )
     this->servers.push_back(new_server);
 }
 
+void    HttpContext::set_max_body_size( size_t limit )
+{
+    this->max_body_size = limit;
+}
+
 
 ServerContext&  HttpContext::get_latest_server( void )
 {
@@ -98,6 +104,7 @@ const bool& HttpContext::get_auto_index( void ) const
 void    HttpContext::show_info()
 {
     std::cout << "Major HTTP context info :" << std::endl;
+    std::cout << "Max body size : " << this->max_body_size << std::endl;
     std::cout << "Number of defined error pages : " << this->error_pages.size() << std::endl;
     std::cout << "Error pages info : " << std::endl;
 

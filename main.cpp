@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:05:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/14 15:31:56 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/25 23:25:51 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
 {
     std::string file_name;
 
+    /*  Better create a function called usageERR to show this message! */
     if (argc != 2)
     {
         std::cerr << "Usage : ./webserv file.config" << std::endl;
@@ -34,7 +35,8 @@ int main(int argc, char *argv[])
 
     try
     {
-        config_tokenizer(file_name);
+        parse_config_file(file_name);
+        
     }
     catch(const std::exception& e)
     {

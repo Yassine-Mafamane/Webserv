@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:04:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/15 10:28:32 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/26 15:05:19 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,7 +293,7 @@ void    tokenize_config(std::queue<token_info>& tokens_queue, std::string file_n
         while ((strm.tellg() != -1) && ((size_t) strm.tellg() != strm.str().length())) // the second condition is for "qeqwe"
         {
             remove_leading_spaces(strm);
-            
+
             quote = quote_first(strm.str().substr(strm.tellg()));
             if (quote != '-')
             {
@@ -326,12 +326,36 @@ void    tokenize_config(std::queue<token_info>& tokens_queue, std::string file_n
     }
 }
 
+void    validate_config(const HttpContext& http_config )
+{
+    const std::vector<ServerContext> servers = http_config.get_servers();
 
-void    config_tokenizer(std::string file_name)
+    if (servers.size() == 0)
+    {
+        throw std::invalid_argument("Configuration Error: Please specify at least one server within the Http context.");
+    }
+
+    std::vector<ServerContext>::const_iterator it = http_config.get_servers().begin();
+    std::vector<ServerContext>::const_iterator end = http_config.get_servers().end();
+
+    for (; it < end; it++)
+    {
+        if (it->get_host() == "")
+            throw std::invalid_argument("Configuration Error: Hostname required for server definition but not provided."); 
+
+        if (it->get_root_directory() == "")
+            throw std::invalid_argument("Configuration Error: Root directory required for server definition but not provided."); 
+
+        if (it->get_ports().size() == 0)
+            throw std::invalid_argument("Configuration Error: Please specify a port for all servers to listen on."); 
+    }
+
+}
+
+HttpContext    parse_config_file(std::string file_name)
 {
     std::queue<token_info>  tokens_queue;
     HttpContext             http_config;
-
 
     tokenize_config(tokens_queue, file_name);
 
@@ -340,6 +364,7 @@ void    config_tokenizer(std::string file_name)
         std::cerr << "empty" << std::endl;
         exit (1);
     }
+
     if (tokens_queue.front().token != "http")
     {
         if (tokens_queue.front().token == ";" || tokens_queue.front().token == "{" || tokens_queue.front().token == "}")
@@ -351,13 +376,13 @@ void    config_tokenizer(std::string file_name)
     }
     tokens_queue.pop();
 
-    // while (!tokens_queue.empty())
-    // {
-    //     std::cout << tokens_queue.front().token << std::endl;
-    //     tokens_queue.pop();
-    // }
-
     store_config(http_config, tokens_queue, file_name, "http");
 
+    validate_config(http_config);
+
+    // Testing
+ 
     http_config.show_info();
+
+    return (http_config);
 }
