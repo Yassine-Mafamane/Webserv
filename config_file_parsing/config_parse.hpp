@@ -6,16 +6,16 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:09:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/25 23:26:48 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/28 15:32:53 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONFIG_PARSE_HPP
 # define CONFIG_PARSE_HPP
 
-#include "HttpContext.hpp"
-#include "ServerContext.hpp"
-#include "LocationContext.hpp"
+#include "../Contexts/HttpContext.hpp"
+#include "../Contexts/ServerContext.hpp"
+#include "../Contexts/LocationContext.hpp"
 #include "../helper_functions.hpp"
 #include "../macros_definition.hpp"
 

@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/25 06:04:40 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/28 15:34:00 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include "../macros_definition.hpp"
+#include "../Utils/macros_definition.hpp"
 #include "ServerContext.hpp"
 
 class HttpContext {
