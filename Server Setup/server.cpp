@@ -6,36 +6,27 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/28 15:07:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/28 22:10:13 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/29 18:33:30 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../Contexts/HttpContext.hpp"
-#include "../Utils/helper_functions.hpp"
+#include "Server.hpp"
 
-/// include only needed hraders ! 
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <iostream>
-#include <arpa/inet.h>
-#include <map>
-#include <netdb.h>
-
-
-static bool already_binded(const std::multimap<struct sockaddr, unsigned short>& sock_addr, struct sockaddr ai_addr, unsigned short port)
+static bool already_binded(std::vector<struct SocketListener>& active_sockets, const ServerContext& server, struct in_addr host, unsigned short port)
 {
-    std::pair<std::multimap<struct sockaddr, unsigned short>::const_iterator,std::multimap<struct sockaddr, unsigned short>::const_iterator>   range = sock_addr.equal_range(ai_addr);
-    std::multimap<struct sockaddr, unsigned short>::const_iterator                                                                             it = range.first;
+    std::vector<struct SocketListener>::iterator  it = active_sockets.begin();
+    std::vector<struct SocketListener>::iterator  end = active_sockets.end();
 
-
-    for (it = sock_addr.begin(); it != sock_addr.end(); it++)
+    for ( ; it != end; it++)
     {
-        if (it->second == port)
+        if ((it->host.s_addr == host.s_addr) && (it->port == port))
+        {
+            it->servers.push_back(server); // link the server to the socket already created for this host:port
             return true;
+        }
     }
     return false;
 }
-
 
 struct addrinfo *my_get_addrinfo(const char * host)
 {
@@ -49,31 +40,31 @@ struct addrinfo *my_get_addrinfo(const char * host)
 
     if ((ec = getaddrinfo(host, NULL, &hints, &res)) != 0)
     {
+        if (ec == 8)
+            err_throw((std::string("Unknown host : ") + host).c_str());
         err_throw(gai_strerror(ec));
     }
-
     return res;
 }
 
 
-std::vector<int>    initialize_sockets_on_port(struct addrinfo *list, std::multimap<struct sockaddr, unsigned short>& sock_addr,unsigned short port) // sockets with s because for every address in the list a socket will be created!
+void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct SocketListener>& active_sockets, const ServerContext server, unsigned short port)
 {
-    std::vector<int>    s_fds;
     int                 fd;
-    unsigned int        n_sock = 0; // number of sockets;
+    unsigned int        n_sock = 0;
     const char          *cause = NULL;
     struct sockaddr_in  s_info;
-    
-    
-    for ( ; list ; list = list->ai_next) // change that list to give a meaning to a single node!
+
+
+    for (struct addrinfo *entry = list; entry ; entry = entry->ai_next)
     {
-        if (already_binded(sock_addr, *(list->ai_addr), port)) // this step has to be done in order to link other servers to the same socket.
+        if (already_binded(active_sockets, server, ((struct sockaddr_in *) entry)->sin_addr, port))
         {
-            // link the current server with the socket !
+            n_sock++;
             continue ;
         }
 
-        fd = socket(list->ai_family, list->ai_socktype, list->ai_protocol);
+        fd = socket(entry->ai_family, entry->ai_socktype, entry->ai_protocol);
         if (fd == -1)
         {
             cause = "socket";
@@ -81,51 +72,75 @@ std::vector<int>    initialize_sockets_on_port(struct addrinfo *list, std::multi
         }
 
         ft_memset(&s_info, 0, sizeof(s_info));
-        
-        s_info.sin_family = list->ai_family;
-        s_info.sin_addr.s_addr = htonl(((struct sockaddr_in *) list)->sin_addr.s_addr); // a question to answer : what is the relation between the two structs ?
+
+        s_info.sin_family = entry->ai_family;
+        s_info.sin_addr.s_addr = htonl(((struct sockaddr_in *) entry)->sin_addr.s_addr); // a question to answer : what is the relation between the two structs ?
         s_info.sin_port = htons(port);
+
         if (bind(fd, (struct sockaddr *) &s_info, sizeof(s_info)) == -1)
         {
+            close(fd);
             cause = "bind";
             continue ;
         }
 
-        n_sock++;
+        // link the current server to the newlly created socket and add the socket to the active sockets list:
+        {
+            struct SocketListener   new_s;
+            new_s.sock_fd = fd;
+            new_s.host = s_info.sin_addr;
+            new_s.port = port;
+            new_s.servers.push_back(server);
 
-        s_fds.push_back(fd);
+            active_sockets.push_back(new_s);
+        }
+        n_sock++;
 
         // maby listen on the created sockets here
     }
-    
+
+    if (n_sock == 0)
+        throw cause;
 }
 
 
 void    setup_servers(const HttpContext& http_config)
 {
-    std::multimap<struct sockaddr, unsigned short>  sock_addr;  // this represents a multimap of host:port list already binded with a socket
-    struct addrinfo                                 *res;
-    std::vector<int>                                s_fds, new_fds;      // sockets fds, this is gonna be changed and it will be remplaced with a data structer that holds the sockets and the servers related to it. new fds represent the newly created sockets for a single port
-    int                                             nsock;      // number of sockets successfully created
+    std::vector<struct SocketListener>  activeListners;
+    struct addrinfo                     *res;
 
-    // A socket will be defined with it s host::port thus theire should be a struct 
-
-    std::vector<ServerContext>::const_iterator it = http_config.get_servers().begin();
+    std::vector<ServerContext>::const_iterator serv_it = http_config.get_servers().begin();
     std::vector<ServerContext>::const_iterator end = http_config.get_servers().end();    
 
-    for ( ; it < end; it++)
+    for ( ; serv_it < end; serv_it++)
     {
-        res = my_get_addrinfo(it->get_host().c_str());
-        // try to bind every interface ip in the list with the port given and add it to the sick addr mulimap ...
+        try
+        {
+            res = my_get_addrinfo(serv_it->get_host().c_str());
+        }
+        catch(const std::string& err)
+        {
+            close_sockets_on_error(activeListners);
+            std::cerr << err << '\n';
+        }
 
-        // A problem might occure where in the configuration file a host was provided with it s name like my_host for example and in an other server the host was provided as an ip address which refere to the same first host my_host. // this problem wont occure if a bind sockets to each element returned by the getaddrinfo
-
-        // loop on all server ports and do the following :
-        new_fds = initialize_sockets_on_port(res, sock_addr, port);
-            // add the new_fds to the s_fds vector
-
+        {
+            std::vector<unsigned short>::const_iterator ports_it = serv_it->get_ports().begin();
+            std::vector<unsigned short>::const_iterator p_end = serv_it->get_ports().end();
+            
+            for ( ; ports_it < p_end; ports_it++ )
+            {
+                try
+                {
+                    initialize_sockets_on_port(res, activeListners, *serv_it, *ports_it);
+                }
+                catch(const char& err)
+                {
+                    close_sockets_on_error(activeListners);
+                    std::cerr << err << '\n';
+                }
+            }
+        }
         freeaddrinfo(res);
     }
-
-    
 }
