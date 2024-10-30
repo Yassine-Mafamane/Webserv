@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/28 15:07:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/29 18:33:30 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/30 14:06:06 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Soc
         }
         n_sock++;
 
-        // maby listen on the created sockets here
+        listen(fd, 128); // This tells the TCP/IP stack to start accept incoming TCP connections on the port the socket is binded to. 128 because in The mac im working on 128 is the maximum number of pending connections
     }
 
     if (n_sock == 0)
@@ -121,7 +121,7 @@ void    setup_servers(const HttpContext& http_config)
         catch(const std::string& err)
         {
             close_sockets_on_error(activeListners);
-            std::cerr << err << '\n';
+            throw err;
         }
 
         {
@@ -134,10 +134,10 @@ void    setup_servers(const HttpContext& http_config)
                 {
                     initialize_sockets_on_port(res, activeListners, *serv_it, *ports_it);
                 }
-                catch(const char& err)
+                catch(const char* err)
                 {
                     close_sockets_on_error(activeListners);
-                    std::cerr << err << '\n';
+                    throw err;
                 }
             }
         }

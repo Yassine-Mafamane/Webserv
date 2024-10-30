@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 16:08:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/29 17:23:52 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/29 22:27:03 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,15 +28,17 @@
 
 struct SocketListener
 {
+    /* Only one single socket will be created for each host:port */
     int                                 sock_fd;
     std::vector<const ServerContext&>   servers;
-
-    /* Only one single socket will be created for each host:port */
-    struct in_addr                      host;   // The host will be stored in the host representation!
+    struct in_addr                      host;   // The host address will be stored in the host representation!
     unsigned short                      port;
 };
 
 
+
+
+void    setup_servers(const HttpContext& http_config);
 
 
 #endif

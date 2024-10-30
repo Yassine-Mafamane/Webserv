@@ -6,11 +6,10 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:05:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/25 23:25:51 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/29 21:09:59 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
 #include "webserv.hpp"
 
 int main(int argc, char *argv[])
@@ -35,12 +34,17 @@ int main(int argc, char *argv[])
 
     try
     {
-        parse_config_file(file_name);
-        
+        HttpContext http_config = parse_config_file(file_name);
+        setup_servers(http_config);
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
+        return (1);
     }
-    
+    catch(const char* err_msg)
+    {
+        std::cerr << err_msg << '\n';
+        return (1);
+    }
 }

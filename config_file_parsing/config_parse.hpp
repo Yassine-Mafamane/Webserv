@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:09:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/28 15:32:53 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/29 21:11:09 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "../Contexts/HttpContext.hpp"
 #include "../Contexts/ServerContext.hpp"
 #include "../Contexts/LocationContext.hpp"
-#include "../helper_functions.hpp"
+#include "../Utils/helper_functions.hpp"
 #include "../macros_definition.hpp"
 
 #include <iostream>

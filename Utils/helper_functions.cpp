@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 21:38:05 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/29 17:40:06 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/29 21:14:17 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void	*ft_memset(void *b, int c, size_t len)
 
 void    err_throw( const char * message )
 {
-    throw std::string("Webserv : ") + message;
+    throw (std::string("Webserv : ") + message).c_str();
 }
 
 void    close_sockets_on_error(std::vector<struct SocketListener>& active_socks)
