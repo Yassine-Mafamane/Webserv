@@ -6,16 +6,16 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/28 15:07:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/30 14:06:06 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/30 17:27:17 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-static bool already_binded(std::vector<struct SocketListener>& active_sockets, const ServerContext& server, struct in_addr host, unsigned short port)
+static bool already_binded(std::vector<struct ListenerSocket>& active_sockets, const ServerContext& server, struct in_addr host, unsigned short port)
 {
-    std::vector<struct SocketListener>::iterator  it = active_sockets.begin();
-    std::vector<struct SocketListener>::iterator  end = active_sockets.end();
+    std::vector<struct ListenerSocket>::iterator  it = active_sockets.begin();
+    std::vector<struct ListenerSocket>::iterator  end = active_sockets.end();
 
     for ( ; it != end; it++)
     {
@@ -35,7 +35,7 @@ struct addrinfo *my_get_addrinfo(const char * host)
     struct addrinfo hints;
 
     ft_memset(&hints, 0,sizeof(hints));
-    hints.ai_family = AF_INET;
+    hints.ai_family = AF_INET; // TODO : Try specifying AF_INET6 as address family hint and see if ipv4 addresses are gonna be returned as well.
     hints.ai_socktype = SOCK_STREAM;
 
     if ((ec = getaddrinfo(host, NULL, &hints, &res)) != 0)
@@ -48,7 +48,7 @@ struct addrinfo *my_get_addrinfo(const char * host)
 }
 
 
-void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct SocketListener>& active_sockets, const ServerContext server, unsigned short port)
+void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct ListenerSocket>& active_sockets, const ServerContext server, unsigned short port)
 {
     int                 fd;
     unsigned int        n_sock = 0;
@@ -86,7 +86,8 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Soc
 
         // link the current server to the newlly created socket and add the socket to the active sockets list:
         {
-            struct SocketListener   new_s;
+            struct ListenerSocket   new_s;
+            new_s.set_type('L');
             new_s.sock_fd = fd;
             new_s.host = s_info.sin_addr;
             new_s.port = port;
@@ -96,8 +97,9 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Soc
         }
         n_sock++;
 
-        listen(fd, 128); // This tells the TCP/IP stack to start accept incoming TCP connections on the port the socket is binded to. 128 because in The mac im working on 128 is the maximum number of pending connections
-    }
+        if (listen(fd, 128) == -1) // This tells the TCP/IP stack to start accept incoming TCP connections on the port the socket is binded to. 128 because in The mac im working on 128 is the maximum number of pending connections
+            throw std::runtime_error("Webserv : listen() failed");
+    }   
 
     if (n_sock == 0)
         throw cause;
@@ -106,7 +108,7 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Soc
 
 void    setup_servers(const HttpContext& http_config)
 {
-    std::vector<struct SocketListener>  activeListners;
+    std::vector<struct ListenerSocket>  activeListners;
     struct addrinfo                     *res;
 
     std::vector<ServerContext>::const_iterator serv_it = http_config.get_servers().begin();

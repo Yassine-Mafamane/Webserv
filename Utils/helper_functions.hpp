@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 21:39:03 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/29 17:40:20 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/30 15:48:24 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,6 @@ bool is_all_digits(const std::string& str);
 bool    is_space(char c);
 void	*ft_memset(void *b, int c, size_t len);
 void    err_throw( const char * message );
-void    close_sockets_on_error(std::vector<struct SocketListener>& active_socks);
+void    close_sockets_on_error(std::vector<struct ListenerSocket>& active_socks);
 
 #endif
