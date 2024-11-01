@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:25 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/25 23:19:58 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/30 22:38:56 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-
 
 class LocationContext {
 
@@ -52,9 +51,6 @@ class LocationContext {
     void    set_location        ( std::string location );
 
     /* Getters */
-
-    // Testing
-    void    show_info();
 
     private :
 

@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/28 15:34:00 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/30 22:40:20 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include "../Utils/macros_definition.hpp"
+
 #include "ServerContext.hpp"
 
 class HttpContext {
@@ -48,10 +48,6 @@ class HttpContext {
         const std::vector<std::pair <unsigned short, std::string> >&    get_error_pages( void ) const;
         const std::string&                                              get_cgi_extension( void ) const;
         const bool&                                                     get_auto_index( void ) const;
-
-
-        // Testing
-        void    show_info();
 
     private :
 

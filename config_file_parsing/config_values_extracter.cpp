@@ -6,11 +6,11 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 15:44:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/26 15:20:12 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/01 18:56:14 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "config_parse.hpp"
+#include "../webserv.hpp"
 
 bool    extract_autoindex_value(std::queue<token_info>& tokens_queue, std::string file_name)
 {

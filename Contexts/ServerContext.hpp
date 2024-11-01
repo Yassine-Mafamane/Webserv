@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:30 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/25 22:56:25 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/30 22:40:05 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+
 #include "LocationContext.hpp"
 
 class ServerContext {
@@ -69,9 +70,6 @@ class ServerContext {
         const std::string&                                              get_index( void ) const;
         const std::string&                                              get_host( void ) const;
         const bool&                                                     get_auto_index( void ) const;  
-
-        // Testing
-        void show_info();
 
     private :
 

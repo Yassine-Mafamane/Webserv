@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:05:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/29 21:09:59 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/01 22:37:03 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,15 @@ int main(int argc, char *argv[])
 
     try
     {
-        HttpContext http_config = parse_config_file(file_name);
-        setup_servers(http_config);
+        std::vector<struct ListenerSocket>  activeListners;
+        HttpContext                         http_config;
+        int                                 kqueue_fd;
+
+        parse_config_file(file_name, http_config);
+        setup_servers(http_config, activeListners);
+        kqueue_fd = create_kqueue();
+        register_listeners_in_kqueue(kqueue_fd, activeListners);
+        poll_events(kqueue_fd, activeListners);      
     }
     catch(const std::exception& e)
     {

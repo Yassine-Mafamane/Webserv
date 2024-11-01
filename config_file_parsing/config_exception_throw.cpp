@@ -6,11 +6,11 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 17:08:12 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/25 05:58:18 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/01 18:55:58 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "config_parse.hpp"
+#include "../webserv.hpp"
 
 void    throw_config_parse_exception(std::string type, std::string token, std::string file_name, unsigned int line_num)
 {

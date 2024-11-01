@@ -6,16 +6,15 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:04:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/26 15:05:19 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/01 22:22:51 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "config_parse.hpp"
-#include <unistd.h>
+#include "../webserv.hpp"
 
 /* Removing the escape characters from the token before storing it */
 
-token_info normalize_token(std::string token, unsigned int line_num)
+static token_info normalize_token(std::string token, unsigned int line_num)
 {
     token_info  info;
     bool        removed_one;
@@ -100,7 +99,7 @@ token_info normalize_token(std::string token, unsigned int line_num)
     return info;
 }
 
-std::string get_next_chunk(std::string token)
+static std::string get_next_chunk(std::string token)
 {
     unsigned int    escape_char_counter;
     char            quote;
@@ -141,7 +140,7 @@ std::string get_next_chunk(std::string token)
 
 /* this function's job is to only store tokens and skip comments */
 
-bool    has_unmatched_quote(std::string token)
+static bool    has_unmatched_quote(std::string token)
 {
     unsigned int    escape_char_counter;
     bool            unmatched_quote_found;
@@ -171,7 +170,7 @@ bool    has_unmatched_quote(std::string token)
     return unmatched_quote_found;
 }
 
-void    append_token_to_queue(std::string token, std::queue<token_info>& tokens_queue, unsigned int line_num)
+static void    append_token_to_queue(std::string token, std::queue<token_info>& tokens_queue, unsigned int line_num)
 {
     std::string chunk;
     size_t      chunk_pos;
@@ -190,7 +189,7 @@ void    append_token_to_queue(std::string token, std::queue<token_info>& tokens_
     }
 }
 
-char    quote_first(std::string str)
+static char    quote_first(std::string str)
 {    
     for (size_t i = 0; i < str.length(); i++)
     {
@@ -207,7 +206,7 @@ char    quote_first(std::string str)
     return '-';
 }
 
-void    remove_leading_spaces(std::stringstream& strm)
+static void    remove_leading_spaces(std::stringstream& strm)
 {
     while ((strm.tellg() != -1) && ((size_t) strm.tellg() != strm.str().length()) && (strm.peek() == 32 || (strm.peek() >= 9 && strm.peek() <= 13)))
     {
@@ -216,7 +215,7 @@ void    remove_leading_spaces(std::stringstream& strm)
     }
 }
 
-std::string get_quoted_string(std::stringstream& strm, char quote)
+static std::string get_quoted_string(std::stringstream& strm, char quote)
 {
     std::string quoted;
     static int  counter;
@@ -267,7 +266,7 @@ std::string get_quoted_string(std::stringstream& strm, char quote)
     return quoted;
 }
 
-void    tokenize_config(std::queue<token_info>& tokens_queue, std::string file_name)
+static void    tokenize_config(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::stringstream   strm;
     unsigned int        line_num;
@@ -324,9 +323,10 @@ void    tokenize_config(std::queue<token_info>& tokens_queue, std::string file_n
         }
         line_num++;
     }
+    file.close(); // file has to be closed in all cases try to open it in main!
 }
 
-void    validate_config(const HttpContext& http_config )
+static void    validate_config(const HttpContext& http_config )
 {
     const std::vector<ServerContext> servers = http_config.get_servers();
 
@@ -352,10 +352,9 @@ void    validate_config(const HttpContext& http_config )
 
 }
 
-HttpContext    parse_config_file(std::string file_name)
+void    parse_config_file(std::string file_name, HttpContext& http_config)
 {
     std::queue<token_info>  tokens_queue;
-    HttpContext             http_config;
 
     tokenize_config(tokens_queue, file_name);
 
@@ -379,10 +378,4 @@ HttpContext    parse_config_file(std::string file_name)
     store_config(http_config, tokens_queue, file_name, "http");
 
     validate_config(http_config);
-
-    // Testing
- 
-    http_config.show_info();
-
-    return (http_config);
 }

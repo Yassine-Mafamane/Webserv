@@ -6,11 +6,11 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 17:12:39 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/25 05:42:08 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/01 18:56:18 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "config_parse.hpp"
+#include "../webserv.hpp"
 
 bool    is_http_ctx_dir(std::string directive)
 {

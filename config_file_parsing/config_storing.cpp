@@ -6,13 +6,13 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 14:47:39 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/25 06:16:23 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/01 18:56:11 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "config_parse.hpp"
+#include "../webserv.hpp"
 
-void    store_http_directives(HttpContext& http_config, std::queue<token_info>& tokens_queue, std::string file_name)
+static void    store_http_directives(HttpContext& http_config, std::queue<token_info>& tokens_queue, std::string file_name)
 {
     /* The following flags are used to track duplicate directives */
     static bool     cgi_ext_is_set;
@@ -69,7 +69,7 @@ void    store_http_directives(HttpContext& http_config, std::queue<token_info>& 
     }
 }
 
-void    store_serv_directives(HttpContext& http_config, std::queue<token_info>& tokens_queue, std::string file_name)
+static void    store_serv_directives(HttpContext& http_config, std::queue<token_info>& tokens_queue, std::string file_name)
 {
     ServerContext&   server = http_config.get_latest_server();
 
@@ -198,7 +198,7 @@ void    store_serv_directives(HttpContext& http_config, std::queue<token_info>& 
     }
 }
 
-void    store_location_directives(LocationContext& location, std::queue<token_info>& tokens_queue, std::string file_name)
+static void    store_location_directives(LocationContext& location, std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::string token = tokens_queue.front().token;   
 

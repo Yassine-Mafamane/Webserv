@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/28 15:07:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/30 17:27:17 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/01 22:37:20 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ static bool already_binded(std::vector<struct ListenerSocket>& active_sockets, c
     {
         if ((it->host.s_addr == host.s_addr) && (it->port == port))
         {
-            it->servers.push_back(server); // link the server to the socket already created for this host:port
+            it->servers.push_back(&server); // link the server to the socket already created for this host:port
             return true;
         }
     }
@@ -48,13 +48,13 @@ struct addrinfo *my_get_addrinfo(const char * host)
 }
 
 
-void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct ListenerSocket>& active_sockets, const ServerContext server, unsigned short port)
+void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct ListenerSocket>& active_sockets, const ServerContext& server, unsigned short port)
 {
     int                 fd;
-    unsigned int        n_sock = 0;
     const char          *cause = NULL;
-    struct sockaddr_in  s_info;
-
+    unsigned int        n_sock = 0;
+    struct sockaddr_in * ip_access;
+    int                 opt = 1; // TODO
 
     for (struct addrinfo *entry = list; entry ; entry = entry->ai_next)
     {
@@ -70,14 +70,15 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Lis
             cause = "socket";
             continue ;
         }
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt));
 
-        ft_memset(&s_info, 0, sizeof(s_info));
+        ft_memset(ip_access, 0, sizeof(struct sockaddr_in));
 
-        s_info.sin_family = entry->ai_family;
-        s_info.sin_addr.s_addr = htonl(((struct sockaddr_in *) entry)->sin_addr.s_addr); // a question to answer : what is the relation between the two structs ?
-        s_info.sin_port = htons(port);
+        ip_access = (struct sockaddr_in *) entry->ai_addr;
+        ip_access->sin_family = entry->ai_family;;
+        ip_access->sin_port = htons(port);
 
-        if (bind(fd, (struct sockaddr *) &s_info, sizeof(s_info)) == -1)
+        if (bind(fd, (struct sockaddr *) ip_access, sizeof(*ip_access)) == -1)
         {
             close(fd);
             cause = "bind";
@@ -89,11 +90,13 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Lis
             struct ListenerSocket   new_s;
             new_s.set_type('L');
             new_s.sock_fd = fd;
-            new_s.host = s_info.sin_addr;
+            new_s.host = ((struct sockaddr_in *)entry->ai_addr)->sin_addr;
             new_s.port = port;
-            new_s.servers.push_back(server);
+            new_s.servers.push_back(&server);
 
             active_sockets.push_back(new_s);
+
+            std::cout <<  inet_ntoa(((struct sockaddr_in *)(entry->ai_addr))->sin_addr) << ":" << ntohs(((struct sockaddr_in*)entry->ai_addr)->sin_port) << std::endl;
         }
         n_sock++;
 
@@ -106,10 +109,9 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Lis
 }
 
 
-void    setup_servers(const HttpContext& http_config)
+void    setup_servers(const HttpContext& http_config, std::vector<struct ListenerSocket>&  activeListners)
 {
-    std::vector<struct ListenerSocket>  activeListners;
-    struct addrinfo                     *res;
+    struct addrinfo *res;
 
     std::vector<ServerContext>::const_iterator serv_it = http_config.get_servers().begin();
     std::vector<ServerContext>::const_iterator end = http_config.get_servers().end();    

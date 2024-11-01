@@ -6,11 +6,12 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 21:38:05 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/30 15:48:24 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/01 21:46:16 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "helper_functions.hpp"
+
+#include "utils.hpp"
 
 bool is_all_digits(const std::string& str)
 {
@@ -36,7 +37,7 @@ void	*ft_memset(void *b, int c, size_t len)
 	i = 0;
 	while (i < len)
 	{
-		*((unsigned char *)(b + i)) = (unsigned char) c;
+		*((unsigned char *)(b) + i) = (unsigned char) c;
 		i++;
 	}
 	return (b);
@@ -51,6 +52,17 @@ void    close_sockets_on_error(std::vector<struct ListenerSocket>& active_socks)
 {
     std::vector<struct ListenerSocket>::iterator it = active_socks.begin();
     std::vector<struct ListenerSocket>::iterator end = active_socks.end();
+
+    for ( ; it != end; it++ )
+    {
+        close(it->sock_fd);   
+    }
+}
+
+void    close_client_sockets_on_error(std::vector<struct ClientSocket>& clients_socks) // TODO : use dynamic cast 
+{
+    std::vector<struct ClientSocket>::iterator it = clients_socks.begin();
+    std::vector<struct ClientSocket>::iterator end = clients_socks.end();
 
     for ( ; it != end; it++ )
     {
