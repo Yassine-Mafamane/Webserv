@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 16:08:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/01 21:59:04 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/02 19:08:25 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,18 +48,42 @@ struct Socket
         return this->type;
     }
 
+    int     get_sock_fd( void )
+    {
+        return this->sock_fd;
+    }
+
+    void    set_sock_fd( int fd )
+    {
+        this->sock_fd = fd;
+    }
+
+    std::vector<const ServerContext*>&   get_servers( void )
+    {
+        return this->servers;
+    }
+
+    void    set_servers( std::vector<const ServerContext*>& servers )
+    {
+        this->servers.insert(this->servers.end(), servers.begin(), servers.end());
+    }
+
+    void    add_server( const ServerContext* new_server )
+    {
+        this->servers.push_back(new_server);
+    }
+
 private : 
 
-    char    type; /* 'L' for ListenerSocket | 'C' for client socket */
+    int                                 sock_fd;
+    char                                type;       // 'L' for ListenerSocket | 'C' for client socket
+    std::vector<const ServerContext*>   servers;
 };
 
 struct ListenerSocket : public Socket
 {
-    /* Only one single socket will be created for each host:port */
-    int                                 sock_fd;
-    std::vector<const ServerContext*>   servers;    // The list of servers that can be used to answer to HTTP requests comming on the socket.
-    struct in_addr                      host;       // The host address will be stored in the host representation!
-    unsigned short                      port;
+    struct in_addr                      host;       // In the host representation
+    unsigned short                      port;       // In the host representation
 
     ListenerSocket& get_instance( void )
     {
@@ -69,9 +93,6 @@ struct ListenerSocket : public Socket
 
 struct ClientSocket : public Socket
 {
-    int                                 sock_fd; /* This two attributes can be inherited from the Socket struct */
-    std::vector<const ServerContext*>   servers;
-
     ClientSocket& get_instance( void )
     {
         return *this;

@@ -37,9 +37,5 @@
 # VsCode
 .vscode
 
-# gitignore him self
-gitignore
-
-
 # TLDRAW files
 server_architecture.tldr

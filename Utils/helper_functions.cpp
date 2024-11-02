@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 21:38:05 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/01 21:46:16 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/02 19:12:05 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ void    close_sockets_on_error(std::vector<struct ListenerSocket>& active_socks)
 
     for ( ; it != end; it++ )
     {
-        close(it->sock_fd);   
+        close(it->get_sock_fd());   
     }
 }
 
@@ -66,6 +66,6 @@ void    close_client_sockets_on_error(std::vector<struct ClientSocket>& clients_
 
     for ( ; it != end; it++ )
     {
-        close(it->sock_fd);   
+        close(it->get_sock_fd());   
     }
 }

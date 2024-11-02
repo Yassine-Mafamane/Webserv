@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/28 15:07:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/01 22:37:20 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/02 19:09:23 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ static bool already_binded(std::vector<struct ListenerSocket>& active_sockets, c
     {
         if ((it->host.s_addr == host.s_addr) && (it->port == port))
         {
-            it->servers.push_back(&server); // link the server to the socket already created for this host:port
+            it->add_server(&server); // link the server to the socket already created for this host:port
             return true;
         }
     }
@@ -89,10 +89,10 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Lis
         {
             struct ListenerSocket   new_s;
             new_s.set_type('L');
-            new_s.sock_fd = fd;
+            new_s.set_sock_fd(fd);
             new_s.host = ((struct sockaddr_in *)entry->ai_addr)->sin_addr;
             new_s.port = port;
-            new_s.servers.push_back(&server);
+            new_s.add_server(&server);
 
             active_sockets.push_back(new_s);
 
