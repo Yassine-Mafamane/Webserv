@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 21:38:05 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/02 19:12:05 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/04 13:59:45 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,13 +59,14 @@ void    close_sockets_on_error(std::vector<struct ListenerSocket>& active_socks)
     }
 }
 
-void    close_client_sockets_on_error(std::vector<struct ClientSocket>& clients_socks) // TODO : use dynamic cast 
+void    close_client_sockets_on_error(std::vector<struct ClientSocket *>& clients_socks)
 {
-    std::vector<struct ClientSocket>::iterator it = clients_socks.begin();
-    std::vector<struct ClientSocket>::iterator end = clients_socks.end();
+    std::vector<struct ClientSocket *>::iterator it = clients_socks.begin();
+    std::vector<struct ClientSocket *>::iterator end = clients_socks.end();
 
     for ( ; it != end; it++ )
     {
-        close(it->get_sock_fd());   
+        close((*it)->get_sock_fd());
+        delete *it;   
     }
 }

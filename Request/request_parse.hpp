@@ -1,26 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.hpp                                          :+:      :+:    :+:   */
+/*   request_parse.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/01 21:45:38 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/04 14:00:51 by ymafaman         ###   ########.fr       */
+/*   Created: 2024/11/05 12:47:07 by ymafaman          #+#    #+#             */
+/*   Updated: 2024/11/05 21:09:42 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef UTILS_HPP
-# define UTILS_HPP
+#ifndef REQUEST_PARSE_HPP
+# define REQUEST_PARSE_HPP
 
-#include "../webserv.hpp"
+#include <string>
+#include "Request.hpp"
+#include "../macros.hpp"
 
-bool    is_space(char c);
-void    err_throw( const char * message );
-bool    is_all_digits(const std::string& str);
-void	*ft_memset(void *b, int c, size_t len);
-void    close_sockets_on_error(std::vector<struct ListenerSocket>& active_socks);
-void    close_client_sockets_on_error(std::vector<struct ClientSocket *>& clients_socks);
-
+void    parse_start_line(Request& request, std::string start_line);
 
 #endif

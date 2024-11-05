@@ -6,16 +6,17 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 16:08:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/02 19:08:25 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/05 12:57:39 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
+#include "../Request/request_parse.hpp"
 #include "../Contexts/HttpContext.hpp"
 #include "../Utils/utils.hpp"
-
+#include "../macros.hpp"
 
 /// include only needed hraders ! 
 
@@ -93,16 +94,29 @@ struct ListenerSocket : public Socket
 
 struct ClientSocket : public Socket
 {
+    Request request;
     ClientSocket& get_instance( void )
     {
         return *this;
     }
 };
 
-
+/*                              Sockets                              */
 void    setup_servers(const HttpContext& http_config, std::vector<struct ListenerSocket>&  activeListners);
-int     create_kqueue( void );
+
+/*                              Kqueue                              */
 void    register_listeners_in_kqueue(int kqueue_fd, std::vector<struct ListenerSocket> & activeListners);
+void    switch_interest(ClientSocket* client_info, int kqueue_fd,short old_filter, short new_filter);
 void    poll_events(int kqueue_fd, std::vector<struct ListenerSocket> & activeListners);
+void    register_socket_in_kqueue(int kqueue_fd, Socket * sock_data, short filter);
+int     create_kqueue( void );
+
+/*                              Cient Management                              */
+void    accept_client_connection(ListenerSocket *listener, int kqueue_fd, std::vector<ClientSocket*>& activeClients);
+void    delete_client(std::vector<ClientSocket *>& activeClients, int fd);
+void    handle_client_request(ClientSocket* client_info);
+void    respond_to_client(ClientSocket* client_info);
+
+
 
 #endif

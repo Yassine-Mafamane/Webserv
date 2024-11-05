@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:07:46 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/01 21:54:11 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/05 12:48:31 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,55 +37,6 @@ typedef struct token_info
     unsigned int    line_num;
     bool            is_sep; // This indecates if the token is a separator or not. Separators are (";" and "{" and "}")
 } token_info;
-
-
-// struct Socket
-// {
-//     void    set_type( char type )
-//     {
-//         this->type = type;
-//     }
-
-//     char    get_type( void )
-//     {
-//         return this->type;
-//     }
-
-// private : 
-
-//     char    type; /* 'L' for ListenerSocket | 'C' for client socket */
-// };
-
-// struct ListenerSocket : public Socket
-// {
-//     /* Only one single socket will be created for each host:port */
-//     int                                 sock_fd;
-//     std::vector<const ServerContext*>   servers;    // The list of servers that can be used to answer to HTTP requests comming on the socket.
-//     struct in_addr                      host;       // The host address will be stored in the host representation!
-//     unsigned short                      port;
-
-//     ListenerSocket& get_instance( void )
-//     {
-//         return *this;
-//     }
-// };
-
-// struct ClientSocket : public Socket
-// {
-//     int                                 sock_fd; /* This two attributes can be inherited from the Socket struct */
-//     std::vector<const ServerContext*>   servers;
-
-//     ClientSocket& get_instance( void )
-//     {
-//         return *this;
-//     }
-// };
-
-
-// void    setup_servers(const HttpContext& http_config, std::vector<struct ListenerSocket>&  activeListners);
-// int     create_kqueue( void );
-// void    register_listeners_in_kqueue(int kqueue_fd, std::vector<struct ListenerSocket> & activeListners);
-// void    poll_events(int kqueue_fd, std::vector<struct ListenerSocket> & activeListners);
 
         /* ----------------------------------------------------------------------------------------------------------------- */
 
