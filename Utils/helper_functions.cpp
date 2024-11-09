@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 21:38:05 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/04 13:59:45 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/08 20:24:10 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ void    close_client_sockets_on_error(std::vector<struct ClientSocket *>& client
     for ( ; it != end; it++ )
     {
         close((*it)->get_sock_fd());
+        delete (*it)->request;
         delete *it;   
     }
 }

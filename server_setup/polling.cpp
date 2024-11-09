@@ -6,11 +6,28 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/30 15:08:50 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/05 11:37:50 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/08 20:34:26 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+
+void    print_result(Request & client_request)
+{
+    if (client_request.isBadRequest())
+    {
+        std::cout << "Bad request!" << std::endl;
+    }
+    else
+    {
+        std::cout << client_request.get_method() << " " << client_request.get_target() << " " << client_request.get_version() << std::endl;
+        std::cout << "Qeury : " << client_request.get_query() << std::endl;
+        client_request.print_headrs();
+        std::cout << "Body : [";
+        std::cout << client_request.get_body();
+        std::cout << "]" << std::endl;
+    }
+}
 
 void    poll_events(int kqueue_fd, std::vector<struct ListenerSocket> & activeListners)
 {
@@ -60,7 +77,13 @@ void    poll_events(int kqueue_fd, std::vector<struct ListenerSocket> & activeLi
                 try
                 {
                     handle_client_request(client_info);
-                    switch_interest(client_info, kqueue_fd, EVFILT_READ, EVFILT_WRITE); // Interest is gonna be switched only if the request has been entirely rood
+                    if (client_info->request->isBadRequest() || client_info->request->isReady())
+                    {
+                        
+                        Request&    client_request = *(client_info->request);     
+                        print_result(client_request);
+                        switch_interest(client_info, kqueue_fd, EVFILT_READ, EVFILT_WRITE); // Interest is gonna be switched only if the request has been entirely rood
+                    }
                 }
                 catch(const std::exception& e)
                 {

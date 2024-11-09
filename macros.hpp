@@ -6,15 +6,16 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/04 17:05:36 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/05 19:33:17 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/06 20:24:39 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MACROS_HPP
 # define MACROS_HPP
 
-
-#define CRLF "\r\n"
+#define CR      '\r'
+#define LF      '\n'
+#define CRLF    "\r\n"
 
 
 /*              Parsing error codes              */

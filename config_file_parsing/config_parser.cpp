@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:04:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/01 22:22:51 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/09 16:14:38 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,9 +193,14 @@ static char    quote_first(std::string str)
 {    
     for (size_t i = 0; i < str.length(); i++)
     {
-        if (((i == 0) && (str[i] == '"' || str[i] == '\'')) || ((str[i - 1] != '\\') && (str[i] == '"' || str[i] == '\'')))
+        if ((i == 0) && (str[i] == '"' || str[i] == '\''))
         {
             return str[i];
+        }
+        else if (i != 0)
+        {
+            if ((str[i - 1] != '\\') && (str[i] == '"' || str[i] == '\''))
+                return str[i];
         }
         else if (is_space(str[i]))
         {

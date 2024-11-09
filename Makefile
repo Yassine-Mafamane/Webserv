@@ -3,7 +3,6 @@ SERVER_SRCS			=	server_setup/server.cpp \
 						server_setup/ClientHandler.cpp \
 						server_setup/KqueueWrapper.cpp
 
-
 UTILS_SRCS			=	Utils/helper_functions.cpp
 
 CONFIG_PARSE_SRCS	=	config_file_parsing/config_exception_throw.cpp \
@@ -19,8 +18,9 @@ CONTEXTS_SRCS		=	Contexts/HttpContext.cpp \
 MAIN_SRCS			=	main.cpp
 
 REQUEST_SRCS		=	Request/Request.cpp \
-						Request/request_parser.cpp
-
+						Request/start_line_parser.cpp \
+						Request/headers_parser.cpp \
+						Request/body_parser.cpp
 #-------------------------------------------------------------------------------------------------------------------------------#
 
 CONFIG_PARSE_OBJECTS = $(CONFIG_PARSE_SRCS:.cpp=.o)
@@ -39,7 +39,7 @@ REQUEST_OBJECTS = $(REQUEST_SRCS:.cpp=.o)
 
 CPP = c++
 
-FLAGS = -Wall -Wextra -Werror -std=c++98 
+FLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address
 
 NAME = webserv
 

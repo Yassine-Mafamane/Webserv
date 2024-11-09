@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 16:08:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/05 12:57:39 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/08 20:22:53 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ struct ListenerSocket : public Socket
 
 struct ClientSocket : public Socket
 {
-    Request request;
+    Request * request;
     ClientSocket& get_instance( void )
     {
         return *this;

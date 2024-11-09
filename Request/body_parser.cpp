@@ -1,24 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   request_parse.hpp                                  :+:      :+:    :+:   */
+/*   body_parser.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/05 12:47:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/08 17:02:21 by ymafaman         ###   ########.fr       */
+/*   Created: 2024/11/08 16:59:44 by ymafaman          #+#    #+#             */
+/*   Updated: 2024/11/09 15:14:36 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef REQUEST_PARSE_HPP
-# define REQUEST_PARSE_HPP
+#include "request_parse.hpp"
 
-#include <string>
-#include "Request.hpp"
-#include "../macros.hpp"
-
-void    parse_start_line(Request& request, std::string start_line);
-void    parse_headers(Request & request, std::string & msg);
-void    parse_body(Request & request, std::string & msg );
-
-#endif
+void    parse_body(Request & request, std::string & msg )
+{
+    request.set_body(msg);
+    request.markAsReady(true);
+}
