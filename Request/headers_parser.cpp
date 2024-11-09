@@ -106,11 +106,7 @@ static void    parse_header(Request & request, std::string & header)
 
     colon_pos = header.find(':');
     if (colon_pos == std::string::npos)
-    {
-    std::cout << "Reason : " << header << std::endl;
-        
         return request.markAsBad(6);
-    }
 
     field_name = header.substr(0, colon_pos);
     if (field_name.empty() || contain_white_space(field_name))
@@ -121,7 +117,7 @@ static void    parse_header(Request & request, std::string & header)
     header.erase(0, colon_pos + 1);
     field_value = header;
 
-    validate_header_value(request ,field_name, field_value);
+    validate_header_value(request , field_name, field_value);
 }
 
 void    parse_headers(Request & request, std::string & msg)
@@ -130,7 +126,7 @@ void    parse_headers(Request & request, std::string & msg)
     size_t              crlf_pos;
 
     crlf_pos = msg.find(CRLF);
-    while (crlf_pos != std::string::npos)
+    while ((crlf_pos != std::string::npos) && !request.isBadRequest())
     {
     	line = msg.substr(0, crlf_pos);
         if (line.empty())
@@ -143,6 +139,6 @@ void    parse_headers(Request & request, std::string & msg)
 		msg.erase(0, crlf_pos + 2);
     	crlf_pos = msg.find(CRLF);
     }
-    if (!request.hasParsedHeaders())
+    if (!request.hasParsedHeaders() && !request.isBadRequest())
         request.storeUnparsedMsg(msg);
 }

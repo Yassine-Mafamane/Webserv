@@ -51,11 +51,12 @@ void    accept_client_connection(ListenerSocket *listener, int kqueue_fd, std::v
 
 void    determine_parsing_stage(ClientSocket* client_info, std::string & rcvdMsg)
 {
-    Request&    client_request = *(client_info->request);     
+    Request&    client_request = *(client_info->request); // remove this and just send the request as an argument to thus function 
     size_t      crlf_pos = rcvdMsg.find(CRLF);
-    static int i;
+    
+    if (client_request.isBadRequest())
+        return ;
 
-    i++;
     // Ensure CRLF terminator is present before parsing the start line or headers
     if ((!client_request.hasParsedStartLine() || !client_request.hasParsedHeaders()) && crlf_pos == std::string::npos)
     {
@@ -79,7 +80,7 @@ void    determine_parsing_stage(ClientSocket* client_info, std::string & rcvdMsg
         parse_headers(client_request, rcvdMsg);
         return determine_parsing_stage(client_info, rcvdMsg);
     }
-
+    // only read the body if the method is not get or head! or if content length is not 0...
     if (!client_request.hasParsedBody())
         parse_body(client_request, rcvdMsg);
 }
@@ -117,6 +118,7 @@ void    respond_to_client(ClientSocket* client_info)
     if (send(client_info->get_sock_fd(), (void *) rsp.c_str(), rsp.length(), 0) == -1)
         throw std::runtime_error("send failed");
     
-                        delete client_info->request;
-                    client_info->request = new Request();
+    delete client_info->request;
+    client_info->request = NULL;
+    client_info->request = new Request();
 }

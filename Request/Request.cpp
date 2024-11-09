@@ -135,7 +135,7 @@ void    Request::set_parsingErrorCode( short code )
 
 void    Request::storeUnparsedMsg(const std::string & msg )
 {
-    this->unparsed_msg = msg;
+    this->unparsed_msg += msg;
 }
 
 /* Methods */

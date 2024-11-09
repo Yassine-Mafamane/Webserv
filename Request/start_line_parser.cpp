@@ -30,7 +30,7 @@ static char hex_to_char(const std::string & hex_code, Request & request)
 
 static  void    check_method(std::string& method, Request& request)
 {
-    request.set_method(method); // TODO : Validate characters before setting the request method ?
+    request.set_method(method); // TODO : Validate characters before setting the request method ? // might contain a white space!
 }
 
 void    extract_target(const std::string & uri, Request & request)

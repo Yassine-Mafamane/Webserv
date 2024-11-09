@@ -53,7 +53,7 @@ void    poll_events(int kqueue_fd, std::vector<struct ListenerSocket> & activeLi
             {
                 std::cout << "Client disconected!" << std::endl;
                 delete_client(activeClients, events[i].ident);
-                close(events[i].ident); // The events related to the socket closed get romevoed automatically from the kqueue.
+                close(events[i].ident);
             }
             else if (((Socket *) events[i].udata)->get_type() == 'L')
             {
