@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 19:05:24 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/09 17:03:41 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/10 20:01:23 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,13 @@ static bool contain_white_space(std::string token)
 
 static void	validate_host(Request & request, std::string & host_value)
 {
+
+	size_t		colon_pos = host_value.find(':'); // The colon position is the start of the PORT part in the HOST:PORT or SERVER_NAME:PORT combo.
+
+    if (colon_pos != std::string::npos)
+        host_value.erase(0, colon_pos + 1);
+
+    // better check if it s duplicated first
 	for (size_t i = 0; i < host_value.length() && isspace(host_value[i]); i++)
     {
         if (host_value[i] == ' ')
@@ -49,13 +56,8 @@ static void	validate_host(Request & request, std::string & host_value)
     }
 	if (host_value.empty() || contain_white_space(host_value))
 		return request.markAsBad(3);
-	
-	size_t		colon_pos = host_value.find(':'); // The colon position is the start of the PORT part in the HOST:PORT or SERVER_NAME:PORT combo.
 
-	if (colon_pos == std::string::npos)
-		return request.setHeader("HOST", host_value);
-
-	request.setHeader("HOST", host_value.substr(0, colon_pos));
+	return request.setHeader("HOST", host_value);
 }
 
 static void trim_spaces(Request & request, std::string & field_value)
@@ -95,6 +97,7 @@ static void validate_header_value(Request & request, std::string & field_name, s
         return validate_host(request, field_value);
 
 	trim_spaces(request, field_value);
+    // Check content length validity
 	return request.setHeader(field_name, field_value);
 }
 
@@ -106,7 +109,9 @@ static void    parse_header(Request & request, std::string & header)
 
     colon_pos = header.find(':');
     if (colon_pos == std::string::npos)
+    {
         return request.markAsBad(6);
+    }
 
     field_name = header.substr(0, colon_pos);
     if (field_name.empty() || contain_white_space(field_name))
@@ -139,6 +144,4 @@ void    parse_headers(Request & request, std::string & msg)
 		msg.erase(0, crlf_pos + 2);
     	crlf_pos = msg.find(CRLF);
     }
-    if (!request.hasParsedHeaders() && !request.isBadRequest())
-        request.storeUnparsedMsg(msg);
 }

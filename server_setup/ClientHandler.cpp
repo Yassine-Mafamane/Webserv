@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:37:00 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/09 17:01:57 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/10 18:08:51 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,19 +53,18 @@ void    determine_parsing_stage(ClientSocket* client_info, std::string & rcvdMsg
 {
     Request&    client_request = *(client_info->request); // remove this and just send the request as an argument to thus function 
     size_t      crlf_pos = rcvdMsg.find(CRLF);
-    
+
     if (client_request.isBadRequest())
         return ;
 
     // Ensure CRLF terminator is present before parsing the start line or headers
     if ((!client_request.hasParsedStartLine() || !client_request.hasParsedHeaders()) && crlf_pos == std::string::npos)
-    {
-        std::cout << i << std::endl;
         return client_request.storeUnparsedMsg(rcvdMsg); //  here we might have a problem which is the client can keep sending long messages without sending a CRLF terminator ! Thats why at somepoint i have to mark the request as bad if he passes a certain length in the uri or in a header.
-    }
 
     rcvdMsg.insert(0, client_request.getUnparsedMsg());
     client_request.resetUnparsedMsg();
+    crlf_pos = rcvdMsg.find(CRLF);
+    
 
     if (!client_request.hasParsedStartLine())
     {
@@ -95,11 +94,14 @@ void    handle_client_request(ClientSocket* client_info)
         throw std::runtime_error(std::string("Webserv : recv() failed, reason : ") + strerror(errno));
     buffer[rcvdSize] = '\0';
 
-    rcvdMsg = buffer;
-
-    // std::cout << "------------------------------" << std::endl;
-    // std::cout << rcvdMsg << std::endl;
-    // std::cout << "------------------------------" << std::endl;
+    rcvdMsg.append(buffer, rcvdSize);
+    {
+        size_t null_term_pos = rcvdMsg.find('\0');
+        for (size_t i = null_term_pos; i < rcvdMsg.length() ; ++i)
+            if ( rcvdMsg[i] != '\0' )
+                return client_info->request->markAsBad(true);
+    }
+    
     determine_parsing_stage(client_info, rcvdMsg);
 }
 

@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:06:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/09 17:00:52 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/10 19:54:13 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,6 @@ void    Request::markBodyParsed( const bool & parsed )
 
 void    Request::markAsBad( int i )
 {
-    std::cout << i << std::endl;
     this->is_bad = true;
 }
 
@@ -149,14 +148,11 @@ void    Request::setHeader( const std::string& name, const std::string& value )
 {
     if (name == "HOST")
     {
-        if (this->headers.find("HOST") != this->headers.end())
+        if (this->headers.find(name) != this->headers.end())
             return this->markAsBad(8);
     }
-    
-    if (this->headers.find(name) != this->headers.end())
-        this->headers[name] = value;
-    else
-        this->headers.insert(std::make_pair(name, value));
+
+    this->headers[name] = value;
 }
 
 void    Request::set_body( const std::string & body )

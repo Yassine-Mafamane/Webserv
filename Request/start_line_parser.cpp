@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 18:06:26 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/08 17:49:47 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/10 19:14:53 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ void    extract_target(const std::string & uri, Request & request)
 }
 
 static void check_uri(std::string & uri, Request & request)
-{    
+{
     if (uri[0] != '/')
         return request.markAsBad(11);
 
