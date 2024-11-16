@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/30 15:08:50 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/10 16:38:24 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/14 03:25:27 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,11 @@ void    print_result(Request & client_request)
     {
         std::cout << client_request.get_method() << " " << client_request.get_target() << " " << client_request.get_version() << std::endl;
         std::cout << "Qeury : " << client_request.get_query() << std::endl;
+        std::cout << "Args : " << "Chunked: " << client_request.isChunked() << " Content-Length: " << client_request.getContentLength() << " Connection: " << client_request.isPersistent() << "Content-Type: " << client_request.isMultipart() << " Delim: " << client_request.get_boundary() << std::endl;
         client_request.print_headrs();
-        std::cout << "Body : [";
+        std::cout << std::endl;
         std::cout << client_request.get_body();
-        std::cout << "]" << std::endl;
+        std::cout << std::endl << "----------------------------------------" << std::endl;
     }
 }
 
@@ -78,8 +79,7 @@ void    poll_events(int kqueue_fd, std::vector<struct ListenerSocket> & activeLi
                 {
                     handle_client_request(client_info);
                     if (client_info->request->isBadRequest() || client_info->request->isReady())
-                    {
-                        
+                    {                        
                         Request&    client_request = *(client_info->request);     
                         print_result(client_request);
                         switch_interest(client_info, kqueue_fd, EVFILT_READ, EVFILT_WRITE); // Interest is gonna be switched only if the request has been entirely rood

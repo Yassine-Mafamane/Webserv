@@ -6,15 +6,28 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:06:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/10 19:54:13 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/16 03:04:33 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
-Request::Request( void ) : start_line_is_parsed(false), headers_parsed(false), body_is_parsed(false), is_bad(false)
+Request::Request( void )
 {
-    
+    start_line_is_parsed = false;
+    headers_parsed = false;
+    body_is_parsed = false;
+    is_chunked = false;
+    is_persistent = true;
+    is_bad = false;
+    is_multipart = false;
+    content_length_is_set = false;
+    host_is_set = false;
+    content_length = 0;
+    content_type = "text/plain";
+    first_part_reached = false;
+    last_part_reached = false;
+    has_incomplete_part = false;
 }
 
 Request::~Request()
@@ -39,9 +52,29 @@ bool    Request::hasParsedBody()
     return this->body_is_parsed;
 }
 
+bool    Request::hostIsSet()
+{
+    return this->host_is_set;
+}
+
+bool    Request::hasReachedFirstPart( void )
+{
+    return first_part_reached;
+}
+
+bool    Request::hasReachedLastPart( void )
+{
+    return last_part_reached;
+}
+
 bool    Request::isBadRequest()
 {
     return this->is_bad;
+}
+
+bool    Request::ContentLengthIsSet()
+{
+    return this->content_length_is_set;
 }
 
 bool    Request::isReady()
@@ -49,6 +82,20 @@ bool    Request::isReady()
     return this->is_ready;
 }
 
+bool    Request::isChunked()
+{
+    return this->is_chunked;
+}
+
+bool    Request::isPersistent()
+{
+    return this->is_persistent;
+}
+
+bool    Request::isMultipart()
+{
+    return this->is_multipart;
+}
 
 std::string Request::get_target()
 {
@@ -80,7 +127,43 @@ std::string Request::getUnparsedMsg()
     return this->unparsed_msg;
 }
 
+size_t      Request::getContentLength()
+{
+    return this->content_length;
+}
+
+std::string Request::get_boundary()
+{
+    return this->boundary;
+}
+
+bool    Request::hasIncompletePart()
+{
+    return this->has_incomplete_part;   
+}
+
+
+t_part &	Request::get_latest_part()
+{
+    if (!parts.size() || parts.back().is_complete)
+    {
+        t_part  new_part;
+        new_part.is_complete = false;
+        new_part.is_new = true;
+        new_part.header_parsed = false;
+        new_part.content_type = "text/plain";
+        parts.push_back(new_part);
+    }
+
+    return this->parts.back();
+}
+
 /* Setters */
+
+void	Request::set_new_part( t_part & new_part )
+{
+    this->parts.push_back(new_part);
+}
 
 void    Request::set_method( const std::string& method )
 {
@@ -89,6 +172,9 @@ void    Request::set_method( const std::string& method )
 
 void    Request::set_version( const std::string& version )
 {
+    if (version == "HTTP/1.0")
+        this->is_persistent = false;
+
     this->version = version;
 }
 
@@ -101,6 +187,18 @@ void    Request::set_query( std::string query )
 {
     this->query = query;
 }
+
+void	Request::set_content_length( const size_t & length )
+{
+    this->content_length = length;
+    this->content_length_is_set = true;
+}
+
+void    Request::set_boundary( const std::string & boundary )
+{
+    this->boundary = boundary;
+}
+
 
 void    Request::markStartLineParsed( const bool& parsed )
 {
@@ -119,12 +217,44 @@ void    Request::markBodyParsed( const bool & parsed )
 
 void    Request::markAsBad( int i )
 {
+    // Testing
+    std::cout << i << std::endl;
     this->is_bad = true;
+}
+
+void    Request::markAsChunked()
+{
+    this->is_chunked = true;
 }
 
 void    Request::markAsReady( const bool & ready )
 {
     this->is_ready = ready;
+}
+
+void    Request::markAsPersistent( const bool& persist )
+{
+    this->is_persistent = persist;
+}
+
+void    Request::markContentLengthAsSet()
+{
+    this->content_length_is_set = true;
+}
+
+void    Request::markAsMultipart()
+{
+    this->is_multipart = true;
+}
+
+void    Request::markHostAsSet()
+{
+    this->host_is_set = true;
+}
+
+void    Request::markFirstPartAsReached()
+{
+    this->first_part_reached = true;
 }
 
 void    Request::set_parsingErrorCode( short code )
@@ -137,6 +267,11 @@ void    Request::storeUnparsedMsg(const std::string & msg )
     this->unparsed_msg += msg;
 }
 
+void    Request::setHasIncompletePart( bool & incomplete )
+{
+    this->has_incomplete_part = incomplete;
+}
+
 /* Methods */
 
 void    Request::resetUnparsedMsg()
@@ -145,20 +280,19 @@ void    Request::resetUnparsedMsg()
 }
 
 void    Request::setHeader( const std::string& name, const std::string& value )
-{
-    if (name == "HOST")
-    {
-        if (this->headers.find(name) != this->headers.end())
-            return this->markAsBad(8);
-    }
+{   
+    if (name == "TRANSFER-ENCODING" && value == "chunked")
+        this->markAsChunked();    
 
     this->headers[name] = value;
 }
 
 void    Request::set_body( const std::string & body )
 {
-    this->body = body;
+    this->body += body;
 }
+
+// Testing
 
 void    Request::print_headrs()
 {

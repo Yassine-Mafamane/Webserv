@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 18:06:26 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/10 19:14:53 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/16 01:38:32 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,14 @@ static char hex_to_char(const std::string & hex_code, Request & request)
     return (16 * hex_chars.find(first) + hex_chars.find(second));
 }
 
-static  void    check_method(std::string& method, Request& request)
+static void    check_method(std::string& method, Request& request)
 {
-    request.set_method(method); // TODO : Validate characters before setting the request method ? // might contain a white space!
+    for (size_t i = 0; i < method.length(); i++)
+    {
+        if (method[i] < 'A' || method[i] > 'Z')
+            return request.markAsBad(22);
+    }
+    request.set_method(method);
 }
 
 void    extract_target(const std::string & uri, Request & request)
@@ -40,7 +45,7 @@ void    extract_target(const std::string & uri, Request & request)
 
     for (size_t i = 0; i < target_length && !request.isBadRequest() ; i++)
     {
-        if ((uri[i] != '%'))
+        if (uri[i] != '%')
             decoded_target += uri[i];
         else if (i <= target_length - 3)    // Ensure '%' is followed by exactly two characters for valid hex encoding
         {
@@ -70,12 +75,11 @@ static void check_uri(std::string & uri, Request & request)
 
     extract_target(uri.substr(0, query_start_pos), request);
 
-    // The (extract_target) function might mark the request as bad.
     if (request.isBadRequest())
         return ;
 
     uri.erase(0, query_start_pos + 1);
-    request.set_query(uri); // it may have to be decoded as well !
+    request.set_query(uri); // TODO: it may have to be decoded as well !
 }
 
 static void check_version(std::string& version, Request& request)
@@ -106,10 +110,13 @@ void    parse_start_line(Request& request, std::string start_line)
                 check_version(token, request);
                 break ;
             default :
-                request.markAsBad(13);
+                return request.markAsBad(13);
         }
         i++;
     }
+
+    if (i != 3)
+        request.markAsBad(14);
 
     if (!request.isBadRequest())
         request.markStartLineParsed(true);

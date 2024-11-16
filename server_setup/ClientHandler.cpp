@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:37:00 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/10 18:08:51 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/15 04:47:50 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,14 +57,12 @@ void    determine_parsing_stage(ClientSocket* client_info, std::string & rcvdMsg
     if (client_request.isBadRequest())
         return ;
 
-    // Ensure CRLF terminator is present before parsing the start line or headers
     if ((!client_request.hasParsedStartLine() || !client_request.hasParsedHeaders()) && crlf_pos == std::string::npos)
-        return client_request.storeUnparsedMsg(rcvdMsg); //  here we might have a problem which is the client can keep sending long messages without sending a CRLF terminator ! Thats why at somepoint i have to mark the request as bad if he passes a certain length in the uri or in a header.
+        return client_request.storeUnparsedMsg(rcvdMsg); //  here we might have a problem which is the client can keep sending long messages without sending a CRLF terminator !
 
     rcvdMsg.insert(0, client_request.getUnparsedMsg());
     client_request.resetUnparsedMsg();
     crlf_pos = rcvdMsg.find(CRLF);
-    
 
     if (!client_request.hasParsedStartLine())
     {
@@ -72,13 +70,13 @@ void    determine_parsing_stage(ClientSocket* client_info, std::string & rcvdMsg
         rcvdMsg.erase(0, crlf_pos + 2);
         return determine_parsing_stage(client_info, rcvdMsg);
     }
-    // what if the crlf is the last thing in the msg ?  also have to check if there is more crlf to use in header parsing
-    
+
     if (!client_request.hasParsedHeaders())
     {
         parse_headers(client_request, rcvdMsg);
         return determine_parsing_stage(client_info, rcvdMsg);
     }
+
     // only read the body if the method is not get or head! or if content length is not 0...
     if (!client_request.hasParsedBody())
         parse_body(client_request, rcvdMsg);
@@ -92,16 +90,17 @@ void    handle_client_request(ClientSocket* client_info)
 
     if ((rcvdSize = recv(client_info->get_sock_fd(), (void *) buffer, READ_BUFFER_SIZE - 1, 0)) < 0)
         throw std::runtime_error(std::string("Webserv : recv() failed, reason : ") + strerror(errno));
-    buffer[rcvdSize] = '\0';
 
+    buffer[rcvdSize] = '\0';
     rcvdMsg.append(buffer, rcvdSize);
     {
         size_t null_term_pos = rcvdMsg.find('\0');
         for (size_t i = null_term_pos; i < rcvdMsg.length() ; ++i)
+        {
             if ( rcvdMsg[i] != '\0' )
                 return client_info->request->markAsBad(true);
+        }
     }
-    
     determine_parsing_stage(client_info, rcvdMsg);
 }
 

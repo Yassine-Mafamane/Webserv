@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 16:08:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/08 20:22:53 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/12 02:55:27 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@
 
 #define TMOUT_SEC 1 
 #define TMOUT_NSEC 2000 
-#define READ_BUFFER_SIZE 1024
+#define READ_BUFFER_SIZE 11024
 
 struct Socket
 {
