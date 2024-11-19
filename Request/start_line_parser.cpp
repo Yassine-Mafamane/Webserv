@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 18:06:26 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/16 01:38:32 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/19 04:01:18 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,19 +21,19 @@ static char hex_to_char(const std::string & hex_code, Request & request)
 
     if ((first == '0' && second == '0')
         || (hex_chars.find(first) == std::string::npos)
-        || (hex_chars.find(second) == std::string::npos)) {
+        || (hex_chars.find(second) == std::string::npos))
+    {
         request.markAsBad(9);
-        return 0;
     }
     return (16 * hex_chars.find(first) + hex_chars.find(second));
 }
 
-static void    check_method(std::string& method, Request& request)
+static void    check_method(Request& request, std::string& method)
 {
     for (size_t i = 0; i < method.length(); i++)
     {
         if (method[i] < 'A' || method[i] > 'Z')
-            return request.markAsBad(22);
+            request.markAsBad(22);
     }
     request.set_method(method);
 }
@@ -43,7 +43,7 @@ void    extract_target(const std::string & uri, Request & request)
     std::string                 decoded_target;
     size_t                      target_length = uri.length();
 
-    for (size_t i = 0; i < target_length && !request.isBadRequest() ; i++)
+    for (size_t i = 0; i < target_length; i++)
     {
         if (uri[i] != '%')
             decoded_target += uri[i];
@@ -61,7 +61,7 @@ void    extract_target(const std::string & uri, Request & request)
 static void check_uri(std::string & uri, Request & request)
 {
     if (uri[0] != '/')
-        return request.markAsBad(11);
+        request.markAsBad(11);
 
     size_t  fragment_start_pos = uri.find('#');
     size_t      query_start_pos = uri.find('?');
@@ -75,33 +75,30 @@ static void check_uri(std::string & uri, Request & request)
 
     extract_target(uri.substr(0, query_start_pos), request);
 
-    if (request.isBadRequest())
-        return ;
-
     uri.erase(0, query_start_pos + 1);
-    request.set_query(uri); // TODO: it may have to be decoded as well !
+    request.set_query(uri);
 }
 
 static void check_version(std::string& version, Request& request)
 {
     if ((version != "HTTP/1.1") && (version != "HTTP/1.0"))
-        return request.markAsBad(12);
+        request.markAsBad(12);
 
     request.set_version(version);
 }
 
-void    parse_start_line(Request& request, std::string start_line)
+void    parse_start_line(Request & request, const std::string & start_line)
 {
     std::istringstream  line(start_line);
     std::string         token;
     int                 i = 0;
 
-    while (std::getline(line, token, ' ') && !request.isBadRequest())
+    while (std::getline(line, token, ' '))
     {
         switch(i)
         {
             case 0:
-                check_method(token, request);
+                check_method(request, token);
                 break ;
             case 1:
                 check_uri(token, request);
@@ -110,14 +107,12 @@ void    parse_start_line(Request& request, std::string start_line)
                 check_version(token, request);
                 break ;
             default :
-                return request.markAsBad(13);
+                request.markAsBad(13);
         }
         i++;
     }
-
     if (i != 3)
         request.markAsBad(14);
 
-    if (!request.isBadRequest())
-        request.markStartLineParsed(true);
+    request.markStartLineParsed(true);
 }

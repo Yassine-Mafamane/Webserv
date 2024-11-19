@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/28 15:07:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/04 14:22:05 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/19 05:45:13 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Lis
 
             active_sockets.push_back(new_s);
 
-            std::cout <<  inet_ntoa(((struct sockaddr_in *)(entry->ai_addr))->sin_addr) << ":" << ntohs(((struct sockaddr_in*)entry->ai_addr)->sin_port) << std::endl;
+            std::cerr <<  inet_ntoa(((struct sockaddr_in *)(entry->ai_addr))->sin_addr) << ":" << ntohs(((struct sockaddr_in*)entry->ai_addr)->sin_port) << std::endl;
         }
         n_sock++;
 

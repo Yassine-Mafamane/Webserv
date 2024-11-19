@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 19:05:24 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/14 03:33:47 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/18 05:01:08 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static void trim_white_spaces(Request & request, std::string & header_value, con
             i--;
         }
 		else if (forbidenWS.find(header_value[i]) != std::string::npos)
-			return request.markAsBad(11);
+			request.markAsBad(11);
     }
 
 	for (size_t i = header_value.length(); i > 0 && isspace(header_value[i]); i--)
@@ -33,7 +33,7 @@ static void trim_white_spaces(Request & request, std::string & header_value, con
             i++;
         }
 		else if (forbidenWS.find(header_value[i]))
-			return request.markAsBad(2);
+			request.markAsBad(2);
     }
 }
 
@@ -50,7 +50,7 @@ static bool contain_white_space(std::string token)
 static void	validate_host(Request & request, std::string & host_value)
 {
     if (request.hostIsSet())
-        return request.markAsBad(0);
+        request.markAsBad(0);
     
 	trim_white_spaces(request, host_value, " ", "\r\n\f\t\b\v");
 
@@ -60,7 +60,7 @@ static void	validate_host(Request & request, std::string & host_value)
         host_value.erase(0, colon_pos + 1);
 
 	if (host_value.empty() || contain_white_space(host_value))
-		return request.markAsBad(3);
+		request.markAsBad(3);
 
 	request.setHeader("HOST", host_value);
     request.markHostAsSet();
@@ -80,8 +80,6 @@ static void validate_te(Request & request, std::string & field_value)
     while (std::getline(strm, value, ','))
 	{
 		trim_white_spaces(request, value, " \t\v\f\b", "\n\r");
-		if (request.isBadRequest())
-			return ;
 
 		if (value == "chunked")
 			return request.markAsChunked();
@@ -96,10 +94,9 @@ static void validate_connection(Request & request, std::string & field_value)
     while (std::getline(strm, value, ','))
 	{
 		trim_white_spaces(request, value, " \t\v\f\b", "\n\r");
-		if (request.isBadRequest())
-			return ;
+
 		if (value == "close")
-			return request.markAsPersistent(false); // TODO: might remove the return and set the last value instead of the first
+			return request.markAsPersistent(false);
 		else if (value == "keep-alive")
 			return request.markAsPersistent(true);
 	}
@@ -110,7 +107,7 @@ static void validate_content_length(Request & request, std::string & field_value
     for (size_t i = 0; i < field_value.length(); i++)
 	{
 		if (!isdigit(field_value[i]))
-			return request.markAsBad(99);
+			request.markAsBad(99);
 	}
 
 	try
@@ -123,7 +120,7 @@ static void validate_content_length(Request & request, std::string & field_value
 	}
 }
 
-static bool is_multipart(std::string & type)
+static bool is_multipart(std::string & type) // TODO : check if all multipart types are important!
 {
     return (    type == "multipart/mixed" 
             ||  type == "multipart/related" 
@@ -141,7 +138,8 @@ std::string    get_boundary(std::string & bundary_parameter)
 
     if (boundary.front() == '"' && boundary.back() == '"')
     {
-        boundary = boundary.substr(1, boundary.length() - 2);
+        boundary.erase(0, 1);
+        boundary.erase(boundary.length() - 1, 1);
         is_quoted = true;
     }
 
@@ -150,7 +148,7 @@ std::string    get_boundary(std::string & bundary_parameter)
 
     for (size_t i = 0; i < boundary.length(); i++)
     {
-        if ((!isalnum(boundary[i]) && allowed_bchars.find(boundary[i]) == std::string::npos && allowed_separators.find(boundary[i]) == std::string::npos)
+        if ((!isalnum(boundary[i]) && (allowed_bchars.find(boundary[i]) == std::string::npos) && (allowed_separators.find(boundary[i]) == std::string::npos))
             || (allowed_separators.find(boundary[i]) != std::string::npos && !is_quoted))
             return "";
     }
@@ -168,8 +166,6 @@ static void validate_content_type(Request & request, std::string & field_value)
     while (getline(strm, token, ';'))
     {
         trim_white_spaces(request, token, " \t\v\f\b", "\n\r");
-        if (request.isBadRequest())
-            return ;
 
         if (i == 0 && !is_multipart(token))
             return ;
@@ -193,34 +189,34 @@ static void validate_header_value(Request & request, std::string & field_name, s
     if (field_name == "HOST")
         return validate_host(request, field_value);
 
-	trim_white_spaces(request, field_value, " \t\v\f\b", "\n\r");  // TODO check if \b is allowed or not
+	trim_white_spaces(request, field_value, " \t\v\f\b", "\n\r");
 
 	if (field_name == "CONNECTION")
 		validate_connection(request, field_value);
 
     if (request.get_method() == "POST")
     {
-        if (field_name == "CONTENT-LENGTH")
+        if (field_name == "CONTENT_LENGTH")
         {
             if (request.isChunked())
-                return request.markAsBad(33);
+                request.markAsBad(33);
             validate_content_length(request, field_value);
         }
-        else if (field_name == "TRANSFER-ENCODING" && !request.isChunked())
+        else if (field_name == "TRANSFER_ENCODING")
         {
             if (request.ContentLengthIsSet())
-                return request.markAsBad(33);
+                request.markAsBad(33);
             if (!request.isChunked())
                 validate_te(request, field_value);
         }
-        else if (field_name == "CONTENT-TYPE")
+        else if (field_name == "CONTENT_TYPE")
             validate_content_type(request, field_value);
     }
 
-	return request.setHeader(field_name, field_value);
+	request.setHeader(field_name, field_value);
 }
 
-static bool     contain_unallowed_char(const std::string & field_name)
+static bool     contain_unallowed_char(std::string & field_name)
 {
     for (size_t i = 0; i < field_name.length(); i++)
     {
@@ -231,6 +227,8 @@ static bool     contain_unallowed_char(const std::string & field_name)
         {
             return true;
         }
+        if (field_name[i] == '-')
+            field_name[i] = '_';
     }
     return false;
 }
@@ -243,13 +241,11 @@ static void    parse_header(Request & request, std::string & header)
 
     colon_pos = header.find(':');
     if (colon_pos == std::string::npos)
-    {
-        return request.markAsBad(6);
-    }
+        request.markAsBad(6);
 
     field_name = header.substr(0, colon_pos);
     if (field_name.empty() || contain_unallowed_char(field_name))
-        return request.markAsBad(7);
+        request.markAsBad(7);
 
     normalize_header_name(field_name);
 
@@ -265,7 +261,7 @@ void    parse_headers(Request & request, std::string & msg)
     size_t              crlf_pos;
 
     crlf_pos = msg.find(CRLF);
-    while ((crlf_pos != std::string::npos) && !request.isBadRequest())
+    while (crlf_pos != std::string::npos)
     {
     	line = msg.substr(0, crlf_pos);
         if (line.empty())

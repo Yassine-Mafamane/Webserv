@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/04 17:07:06 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/16 02:46:01 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/19 07:36:30 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ class Request {
 
         /* Getters */
 		t_part &	get_latest_part();
-
+        size_t      get_total_chunks_length();
         std::string get_target();
         std::string get_query();
         std::string get_method();
@@ -67,8 +67,10 @@ class Request {
 
         bool    hasReachedFirstPart( void );       
         bool    hasReachedLastPart( void ); 
+        size_t   hasAnUndoneChunk( void ); 
 
         /* Setters */
+        void      set_total_chunks_length(size_t total_length);
 		void	set_new_part( t_part & new_part );
 
         void    set_method( const std::string & method );
@@ -90,15 +92,19 @@ class Request {
         void    markAsMultipart();
         void    markHostAsSet();
         void    markFirstPartAsReached();
+        void    markLastPartAsReached();
         void    set_parsingErrorCode( short code );
         void    storeUnparsedMsg(const std::string & msg );
+        void    markAsHasUndoneChunk( bool undone, size_t size_left );
 
         /* Methods */
         void    resetUnparsedMsg();
         void    setHeader( const std::string& name, const std::string& value );
 
         void    print_headrs();
+        void    print_files();
 
+        void    drop_last_part();
     private : 
 
         std::map<std::string, std::string>  headers;
@@ -127,6 +133,7 @@ class Request {
         /* */
         std::string                         unparsed_msg;
         size_t		                        content_length;
+        size_t                              total_chunks_length;
 
         std::string                         boundary;
 
@@ -136,6 +143,8 @@ class Request {
         bool					first_part_reached; // In case of a multipart body.
         bool					last_part_reached;
         bool					has_incomplete_part;
+        bool                    undone_chunk;
+        size_t                  size_left;
 };
 
 

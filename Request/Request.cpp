@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:06:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/16 03:04:33 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/19 08:48:32 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,10 @@ Request::Request( void )
     first_part_reached = false;
     last_part_reached = false;
     has_incomplete_part = false;
+    undone_chunk = false;
+    size_left = 0;
+    total_chunks_length = 0;
+    is_ready = false;
 }
 
 Request::~Request()
@@ -36,6 +40,11 @@ Request::~Request()
 }
 
 /* Getters */
+
+size_t      Request::get_total_chunks_length()
+{
+    return this->total_chunks_length;
+}
 
 bool    Request::hasParsedStartLine()
 {
@@ -154,11 +163,20 @@ t_part &	Request::get_latest_part()
         new_part.content_type = "text/plain";
         parts.push_back(new_part);
     }
-
     return this->parts.back();
 }
 
+size_t    Request::hasAnUndoneChunk( void )
+{
+    return this->size_left;
+}
+
 /* Setters */
+
+void      Request::set_total_chunks_length(size_t total_length)
+{
+    this->total_chunks_length += total_length;
+}
 
 void	Request::set_new_part( t_part & new_part )
 {
@@ -220,6 +238,7 @@ void    Request::markAsBad( int i )
     // Testing
     std::cout << i << std::endl;
     this->is_bad = true;
+    throw "Bad request!";
 }
 
 void    Request::markAsChunked()
@@ -257,6 +276,11 @@ void    Request::markFirstPartAsReached()
     this->first_part_reached = true;
 }
 
+void    Request::markLastPartAsReached()
+{
+    this->last_part_reached = true;
+}
+
 void    Request::set_parsingErrorCode( short code )
 {
     this->parsingErrorCode = code;
@@ -264,7 +288,7 @@ void    Request::set_parsingErrorCode( short code )
 
 void    Request::storeUnparsedMsg(const std::string & msg )
 {
-    this->unparsed_msg += msg;
+    this->unparsed_msg.append(msg);
 }
 
 void    Request::setHasIncompletePart( bool & incomplete )
@@ -272,11 +296,20 @@ void    Request::setHasIncompletePart( bool & incomplete )
     this->has_incomplete_part = incomplete;
 }
 
+void    Request::markAsHasUndoneChunk( bool undone, size_t size_left )
+{
+    if (undone)
+        this->size_left = size_left;
+    else
+        this->size_left = 0;
+    this->undone_chunk = undone;
+}
+
 /* Methods */
 
 void    Request::resetUnparsedMsg()
 {
-    this->unparsed_msg = "";
+    this->unparsed_msg.clear();
 }
 
 void    Request::setHeader( const std::string& name, const std::string& value )
@@ -301,4 +334,21 @@ void    Request::print_headrs()
     std::map<std::string, std::string>::iterator end = this->headers.end();
     for ( ; it != end; it++)
         std::cout << (*it).first << ": " << (*it).second << std::endl;
+}
+
+
+
+void    Request::print_files()
+{
+    for (std::vector<t_part>::iterator i = parts.begin(); i != parts.end(); i++)
+    {
+        // std::cout << "{"  ;
+        std::cout << i->file_content << std::endl;
+        // std::cout << "}" << std::endl;      
+    }
+}
+
+void    Request::drop_last_part()
+{
+    this->parts.pop_back();
 }

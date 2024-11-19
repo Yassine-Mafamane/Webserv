@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:37:00 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/15 04:47:50 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/19 08:55:10 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,37 +49,55 @@ void    accept_client_connection(ListenerSocket *listener, int kqueue_fd, std::v
     register_socket_in_kqueue(kqueue_fd, activeClients.back(), EVFILT_READ);
 }
 
-void    determine_parsing_stage(ClientSocket* client_info, std::string & rcvdMsg)
+void    determine_parsing_stage(Request & request, std::string & rcvdMsg)
 {
-    Request&    client_request = *(client_info->request); // remove this and just send the request as an argument to thus function 
     size_t      crlf_pos = rcvdMsg.find(CRLF);
 
-    if (client_request.isBadRequest())
-        return ;
+    if ((!request.hasParsedStartLine() || !request.hasParsedHeaders()) && crlf_pos == std::string::npos)
+        return request.storeUnparsedMsg(rcvdMsg); 
 
-    if ((!client_request.hasParsedStartLine() || !client_request.hasParsedHeaders()) && crlf_pos == std::string::npos)
-        return client_request.storeUnparsedMsg(rcvdMsg); //  here we might have a problem which is the client can keep sending long messages without sending a CRLF terminator !
-
-    rcvdMsg.insert(0, client_request.getUnparsedMsg());
-    client_request.resetUnparsedMsg();
+    rcvdMsg.insert(0, request.getUnparsedMsg());
+    request.resetUnparsedMsg();
     crlf_pos = rcvdMsg.find(CRLF);
 
-    if (!client_request.hasParsedStartLine())
+    if (!request.hasParsedStartLine())
     {
-        parse_start_line(client_request, rcvdMsg.substr(0, crlf_pos)); // what if the request has been marked as bad
+        parse_start_line(request, rcvdMsg.substr(0, crlf_pos));
         rcvdMsg.erase(0, crlf_pos + 2);
-        return determine_parsing_stage(client_info, rcvdMsg);
+        return determine_parsing_stage(request, rcvdMsg);
     }
 
-    if (!client_request.hasParsedHeaders())
+    if (!request.hasParsedHeaders())
     {
-        parse_headers(client_request, rcvdMsg);
-        return determine_parsing_stage(client_info, rcvdMsg);
+        parse_headers(request, rcvdMsg);
+        return determine_parsing_stage(request, rcvdMsg);
     }
 
     // only read the body if the method is not get or head! or if content length is not 0...
-    if (!client_request.hasParsedBody())
-        parse_body(client_request, rcvdMsg);
+    if (!request.hasParsedBody())
+        parse_body(request, rcvdMsg);
+}
+
+void    parse_client_request(Request & request, std::string & rcvdMsg)
+{
+    try
+    {
+        if (!request.hasParsedHeaders())
+        {
+            size_t null_term_pos = rcvdMsg.find('\0');
+            for (size_t i = null_term_pos; i < rcvdMsg.length() ; ++i)
+            {
+                if ( rcvdMsg[i] != '\0' )
+                    request.markAsBad(true);
+            }
+        }
+
+        determine_parsing_stage(request, rcvdMsg);  
+    }
+    catch(const char * e)
+    {
+        return ;
+    }
 }
 
 void    handle_client_request(ClientSocket* client_info)
@@ -93,15 +111,19 @@ void    handle_client_request(ClientSocket* client_info)
 
     buffer[rcvdSize] = '\0';
     rcvdMsg.append(buffer, rcvdSize);
-    {
-        size_t null_term_pos = rcvdMsg.find('\0');
-        for (size_t i = null_term_pos; i < rcvdMsg.length() ; ++i)
-        {
-            if ( rcvdMsg[i] != '\0' )
-                return client_info->request->markAsBad(true);
-        }
-    }
-    determine_parsing_stage(client_info, rcvdMsg);
+    
+    // size_t crlf_pos;
+    // crlf_pos = rcvdMsg.find(CRLF);
+    // while (crlf_pos != std::string::npos)
+    // {
+    //     rcvdMsg.insert(crlf_pos, ".");
+    //     crlf_pos = rcvdMsg.find(CRLF, crlf_pos + 3);
+    // }
+    // std::cerr << rcvdMsg << std::endl;
+    // std::cout << "--------------" << std::endl;
+    // return ;
+    parse_client_request(*(client_info->request), rcvdMsg);
+    
 }
 
 void    respond_to_client(ClientSocket* client_info)
@@ -118,7 +140,7 @@ void    respond_to_client(ClientSocket* client_info)
 
     if (send(client_info->get_sock_fd(), (void *) rsp.c_str(), rsp.length(), 0) == -1)
         throw std::runtime_error("send failed");
-    
+
     delete client_info->request;
     client_info->request = NULL;
     client_info->request = new Request();
