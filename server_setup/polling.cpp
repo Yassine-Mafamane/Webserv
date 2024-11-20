@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/30 15:08:50 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/19 05:44:24 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/20 08:09:40 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,12 @@ void    print_result(Request & client_request)
 {
     if (client_request.isBadRequest())
     {
-        std::cout << "Bad request!" << std::endl;
+        std::cerr << "Bad request!" << std::endl;
     }
-    else
-    {
-        client_request.print_files();
-    }
+    // else
+    // {   
+    //     client_request.print_files();
+    // }
 }
 
 void    poll_events(int kqueue_fd, std::vector<struct ListenerSocket> & activeListners)
@@ -46,7 +46,7 @@ void    poll_events(int kqueue_fd, std::vector<struct ListenerSocket> & activeLi
             if((events[i].flags & EV_EOF || events[i].flags & EV_ERROR)
              || (events[i].fflags & EV_EOF || events[i].fflags & EV_ERROR))
             {
-                std::cout << "Client disconected!" << std::endl;
+                std::cerr << "Client disconected!" << std::endl;
                 delete_client(activeClients, events[i].ident);
                 close(events[i].ident);
             }

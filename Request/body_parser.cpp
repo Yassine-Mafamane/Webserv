@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 16:59:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/19 08:42:44 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/20 08:50:21 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,7 +177,6 @@ static void validate_header_value(Request & request, std::string & field_value, 
 				file_name = validate_file_name(request, param.substr(9));
 			else
 			{
-				std::cout << "{" << param << "}"  << std::endl;
 				request.markAsBad(932);
 			}
 		}
@@ -265,6 +264,8 @@ static bool	final_boundary_reached(const std::string & boundary, std::string & c
 
 	return (content.find(close_boundary) == 0);
 }
+#include <fstream>
+	std::ofstream image("image.cpp", std::ios::out |std::ios::trunc | std::ios::binary);
 
 static void	extract_part_content(Request & request, t_part & part, std::string & content)
 {
@@ -280,8 +281,13 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 			request.markAsBad(66);
 
 		if (!part.file_name.empty())
-			part.file_content.append(valid_data); // this will be changed by writing directly at the file.
+		{
+			// part.file_content.append(valid_data); // this will be changed by writing directly at the file.
+			image << valid_data;
+        // image.flush(); 
+		}
 
+		valid_data.clear();
 		content.erase(0, crlf_pos);
 
 		if (final_boundary_reached(request.get_boundary(), content))
@@ -290,6 +296,8 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 			request.markLastPartAsReached();
 			request.markBodyParsed(true); // TODO : theire might be some data after the last boundary, and might have to be rood from the socket!
 			content.clear();
+	
+
 			return ;
 		}
 		else if (is_valid_condidate_line(request.get_boundary(), content))
@@ -302,11 +310,16 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 		{
 			part.unparsed_bytes = content;
 			content.clear();
+	
+
 			return ;
 		}
 		else
 		{
-			part.file_content.append(CRLF);
+			// part.file_content.append(CRLF, 2);
+			// image.write(CRLF, 2);
+			image << CRLF;
+			// image.flush();
 			content.erase(0, 2);
 		}
 
@@ -318,7 +331,11 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 			return request.markAsBad(66);
 
 	if (!part.file_name.empty())
-		part.file_content.append(content);
+	{
+		// part.file_content.append(content);
+			image << content;
+
+	}
 	content.clear();
 }
 
@@ -356,7 +373,9 @@ static void	extract_part(Request & request, std::string & content)
 	// when getting here the file name might or might not be set, only post the file if it s set! because that will be the only case where the part is related to a file input.
 	// if it s a file then directly open it to start writing at it!
 	if (latest_part.header_parsed)
+	{
 		extract_part_content(request, latest_part, content);
+	}
 	else
 	{
 		latest_part.unparsed_bytes = content; // in case we only got a part of a the headers not all of them.
@@ -365,7 +384,6 @@ static void	extract_part(Request & request, std::string & content)
 
 	if (latest_part.is_complete && latest_part.file_name.empty())
 	{
-		std::cout << "last_part droped" << std::endl;	
 		request.drop_last_part();
 	}
 }
@@ -400,6 +418,8 @@ size_t	hex_to_size_t(Request & request, const std::string & chunk_size)
 {
 	std::string valid_hex_chars = "0123456789ABCDEF";
     size_t      size = 0;
+
+	std::cerr << "--------->" << chunk_size << std::endl;
 
     if (chunk_size[0] == '0' && chunk_size.length() != 1)
     {
@@ -448,8 +468,11 @@ static size_t	extract_chunk_length(Request & request, std::string & msg)
 			return 0;
 		}
 	}
+	std::string length = msg.substr(0, crlf_pos);
+	for (size_t i= 0; i < length.length(); i++)
+		length[i] = std::toupper(length[i]);
 
-	chunk_length = hex_to_size_t(request, msg.substr(0, crlf_pos));
+	chunk_length = hex_to_size_t(request, length);
 
 	request.set_total_chunks_length(chunk_length);
 
@@ -501,5 +524,8 @@ void    parse_body(Request & request, std::string & msg)
 		chunk_content = find_chunk_content(request, msg);
 	}
 	if (request.hasParsedBody())
+	{
+		image.close();
 		request.markAsReady(true);
+	}
 }

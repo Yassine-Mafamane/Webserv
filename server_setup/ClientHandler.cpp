@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:37:00 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/19 08:55:10 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/20 08:51:16 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void delete_client(std::vector<ClientSocket *>& activeClients, int fd)
             delete (*it)->request;
             delete (*it);
             activeClients.erase(it);
-            std::cout << "client deleted ! " << std::endl;
+            std::cerr << "client deleted ! " << std::endl;
             return ;
         }
     }
@@ -67,6 +67,13 @@ void    determine_parsing_stage(Request & request, std::string & rcvdMsg)
         return determine_parsing_stage(request, rcvdMsg);
     }
 
+    if (request.get_method() != "POST")
+    {
+        request.markBodyParsed(true);
+        request.markAsReady(true);
+        return; 
+    }
+
     if (!request.hasParsedHeaders())
     {
         parse_headers(request, rcvdMsg);
@@ -82,20 +89,22 @@ void    parse_client_request(Request & request, std::string & rcvdMsg)
 {
     try
     {
-        if (!request.hasParsedHeaders())
-        {
-            size_t null_term_pos = rcvdMsg.find('\0');
-            for (size_t i = null_term_pos; i < rcvdMsg.length() ; ++i)
-            {
-                if ( rcvdMsg[i] != '\0' )
-                    request.markAsBad(true);
-            }
-        }
+        // if (!request.hasParsedHeaders())
+        // {
+        //     size_t null_term_pos = rcvdMsg.find('\0');
+        //     for (size_t i = null_term_pos; i < rcvdMsg.length() ; ++i)
+        //     {
+        //         if ( rcvdMsg[i] != '\0' )
+        //             request.markAsBad(true);
+        //     }
+        // }
 
         determine_parsing_stage(request, rcvdMsg);  
     }
-    catch(const char * e)
+    catch(const std::exception & e)
     {
+            std::cerr << e.what() << std::endl;
+            request.markAsBad(3334);
         return ;
     }
 }
@@ -111,6 +120,9 @@ void    handle_client_request(ClientSocket* client_info)
 
     buffer[rcvdSize] = '\0';
     rcvdMsg.append(buffer, rcvdSize);
+
+    std::cerr << rcvdMsg ;
+    std::cerr.flush();
     
     // size_t crlf_pos;
     // crlf_pos = rcvdMsg.find(CRLF);

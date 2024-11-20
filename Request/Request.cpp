@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:06:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/19 08:48:32 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/20 04:16:43 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -236,7 +236,7 @@ void    Request::markBodyParsed( const bool & parsed )
 void    Request::markAsBad( int i )
 {
     // Testing
-    std::cout << i << std::endl;
+    std::cerr << i << std::endl;
     this->is_bad = true;
     throw "Bad request!";
 }
@@ -337,13 +337,19 @@ void    Request::print_headrs()
 }
 
 
-
+#include <fstream>
 void    Request::print_files()
 {
+
+    std::ofstream image("image.png");
+        
+        // image.open();
     for (std::vector<t_part>::iterator i = parts.begin(); i != parts.end(); i++)
     {
         // std::cout << "{"  ;
-        std::cout << i->file_content << std::endl;
+        image << i->file_content;
+        image.flush();
+        image.close();
         // std::cout << "}" << std::endl;      
     }
 }

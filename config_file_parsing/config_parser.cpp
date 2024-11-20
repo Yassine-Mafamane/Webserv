@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:04:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/09 16:14:38 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/20 08:43:35 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -365,7 +365,6 @@ void    parse_config_file(std::string file_name, HttpContext& http_config)
 
     if (tokens_queue.empty())
     {
-        std::cerr << "empty" << std::endl;
         exit (1);
     }
 
