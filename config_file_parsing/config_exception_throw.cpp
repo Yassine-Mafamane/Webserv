@@ -6,12 +6,12 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 17:08:12 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/01 18:55:58 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/25 16:44:21 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../webserv.hpp"
-
+// Better do this shit as macros
 void    throw_config_parse_exception(std::string type, std::string token, std::string file_name, unsigned int line_num)
 {
     std::ostringstream  error_info;

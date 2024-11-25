@@ -38,11 +38,13 @@
 .vscode
 
 # TLDRAW files
-server_architecture.tldr
-request_parse_planing.tldr
+*.tldr
 
 # notes
 *_notes.txt
 
 # TODO
 TODO
+
+# CPP files
+test.cpp

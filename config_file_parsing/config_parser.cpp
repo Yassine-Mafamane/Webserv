@@ -6,13 +6,63 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:04:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/20 08:43:35 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/24 18:30:00 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../webserv.hpp"
 
 /* Removing the escape characters from the token before storing it */
+
+// \# \; \{ 
+
+
+static token_info normalize_token(std::string token, unsigned int line_num)
+{
+    token_info  info;
+	bool        removed_one;
+    bool        escaped;
+    char        quote;
+
+	if (token == ";" || token == "{" || token == "}")
+    {
+        info.token = token;
+        info.line_num = line_num;
+        info.is_sep = true;
+    	return info;
+    }
+
+	removed_one = false;
+    escaped = false;
+	quote = '-';
+
+	for (size_t i = 0; i < token.length(); i++)
+	{
+		if (removed_one)
+		{
+			removed_one = false;
+            i--;
+		}
+
+        if ((token[i] == '\\') && !escaped && (i != token.length() - 1) && ((token[i + 1] == '\\')
+            || (token[i + 1] == ';') || (token[i + 1] == '{') || (token[i + 1] == '}')
+            || (token[i + 1] == '#') || (token[i + 1] == '\'') || (token[i + 1] == '"')))
+        {
+            token.erase(i, 1);
+            escaped = true;
+            removed_one = true;
+        }
+		else if (!escaped && (token[i] == '\'' || token[i] == '"'))
+		{
+			if (quote != '-')
+			quote = token[i];
+		}
+		else
+			escaped = false;   
+
+	}
+	
+}
 
 static token_info normalize_token(std::string token, unsigned int line_num)
 {
@@ -37,7 +87,7 @@ static token_info normalize_token(std::string token, unsigned int line_num)
     {
         if (removed_one)
             i--;
-         
+
         if ((token[i] == '\\') && !removed_one && (i != token.length() - 1) && ((token[i + 1] == '\\')
             || (token[i + 1] == ';') || (token[i + 1] == '{') || (token[i + 1] == '}')
             || (token[i + 1] == '#') || (token[i + 1] == '\'') || (token[i + 1] == '"')))
@@ -66,7 +116,6 @@ static token_info normalize_token(std::string token, unsigned int line_num)
                     token.erase(i - 1, 1);
                     i--;
                     escape_char_count = 0;
-
                 }        
                 else if (token[i] == '\\')
                 {
@@ -184,7 +233,7 @@ static void    append_token_to_queue(std::string token, std::queue<token_info>& 
 
         tokens_queue.push(normalize_token(chunk, line_num));
 
-        chunk_pos = token.find(chunk);
+        chunk_pos = token.find(chunk); // TODO : isn t this always gonna be 0 ?
         token.erase(chunk_pos, chunk.length());
     }
 }
@@ -247,14 +296,12 @@ static std::string get_quoted_string(std::stringstream& strm, char quote)
 
     strm.read(buff, quoted.length());
 
-    buff[quoted.length()] = '\0'; // no need
-
     if (pair_found)
     {
         char c;
 
-        // append untill the next space / quote (if it s a quote append it so that the other function calls again)
-        while ((strm.tellg() != -1) && ((size_t) strm.tellg() != strm.str().length())) // find out why it fails when i dont do strm.str.length in case there is only "qeqwe"
+        // append untill the next space | quote (if it s a quote append it so that the other function calls again)
+        while ((strm.tellg() != -1) && ((size_t) strm.tellg() != strm.str().length()))
         {
             if (is_space(strm.peek()))
             {
@@ -263,7 +310,7 @@ static std::string get_quoted_string(std::stringstream& strm, char quote)
             strm.get(c);
             quoted += c;
 
-            if ((c == '\'' || c == '"') && quoted[quoted.length() - 1] != '\\') // because if it s an escaped quote, the escape char will be already pushed to the string
+            if ((c == '\'' || c == '"') && quoted[quoted.length() - 1] != '\\')
                 break ;
         }
     }
@@ -271,61 +318,78 @@ static std::string get_quoted_string(std::stringstream& strm, char quote)
     return quoted;
 }
 
-static void    tokenize_config(std::queue<token_info>& tokens_queue, std::string file_name)
+static void	extract_quoted_token(	std::string & token, std::stringstream & strm,
+									std::fstream & file, char & quote, std::string & file_name,
+									unsigned int & line_num)
+{
+    std::string         line;
+
+	while (true)
+	{
+		token += get_quoted_string(strm, quote);
+		if (has_unmatched_quote(token))
+		{
+			if ((strm.tellg() == -1) || ((size_t) strm.tellg() == strm.str().length()))
+			{
+				token += '\n';
+				if (!std::getline(file, line))
+					throw_config_parse_exception("EOF", "", file_name, line_num);
+				strm.clear();
+				strm.str(line);
+				line_num++;
+			}
+		}
+		else
+			break ;
+	}
+}
+
+static void	process_line_tokens(	std::queue<token_info>& tokens_queue, std::stringstream & strm,
+									unsigned int & line_num, std::fstream & file, std::string & file_name)
+{
+    char                quote;
+    std::string         line;
+    std::string         token;
+
+    quote = '-';
+
+	while ((strm.tellg() != -1) && ((size_t) strm.tellg() != strm.str().length()))
+	{
+		remove_leading_spaces(strm);
+
+		quote = quote_first(strm.str().substr(strm.tellg()));
+		if (quote != '-')
+			extract_quoted_token(token, strm, file, quote, file_name, line_num);
+		else
+			strm >> token;
+
+			append_token_to_queue(token, tokens_queue, line_num);
+
+		token = "";
+	}
+}
+
+static void	tokenize_config(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::stringstream   strm;
     unsigned int        line_num;
     std::fstream        file;
-    std::string         token;
     std::string         line;
-    char                quote;
 
     file.open(file_name);
     if (!file.is_open())
         throw std::runtime_error("Failed to open the configuration file!");
 
     line_num = 1;
-    quote = '-';
 
     while (std::getline(file, line))
     {
         strm.clear();
         strm.str(line);
 
-        remove_leading_spaces(strm);
+        remove_leading_spaces(strm); 		// In case of a line that contains only white spaces, this will be usefull.
+		process_line_tokens(tokens_queue, strm, line_num, file, file_name);
 
-        while ((strm.tellg() != -1) && ((size_t) strm.tellg() != strm.str().length())) // the second condition is for "qeqwe"
-        {
-            remove_leading_spaces(strm);
-
-            quote = quote_first(strm.str().substr(strm.tellg()));
-            if (quote != '-')
-            {
-                while (true)
-                {
-                    token += get_quoted_string(strm, quote);
-                    if (has_unmatched_quote(token))
-                    {
-                        if ((strm.tellg() == -1) || ((size_t) strm.tellg() == strm.str().length()))
-                        {
-                            token += '\n';
-                            if (!std::getline(file, line))
-                                throw_config_parse_exception("EOF", "", file_name, line_num);
-                            strm.clear();
-                            strm.str(line);
-                        }
-                    }
-                    else
-                        break ;
-                }
-            }
-            else
-                strm >> token;
-
-                append_token_to_queue(token, tokens_queue, line_num);
-
-            token = "";
-        }
         line_num++;
     }
     file.close(); // file has to be closed in all cases try to open it in main!
@@ -365,7 +429,7 @@ void    parse_config_file(std::string file_name, HttpContext& http_config)
 
     if (tokens_queue.empty())
     {
-        exit (1);
+        exit (1); // TODO
     }
 
     if (tokens_queue.front().token != "http")
