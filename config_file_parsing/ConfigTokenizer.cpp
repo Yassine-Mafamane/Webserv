@@ -18,7 +18,7 @@ std::queue<token_info>   ConfigTokenizer::tokenize(const std::string & file_name
     ConfigTokenizer tokenizer;
 
     tokenizer.open_config_file(file_name);
-
+	return tokenizer.start_tokenization();
 }
 
 void	ConfigTokenizer::open_config_file(std::string file_name)
@@ -31,7 +31,7 @@ void	ConfigTokenizer::open_config_file(std::string file_name)
 	this->file_name = file_name;
 }
 
-void	ConfigTokenizer::start_tokenization()
+std::queue<token_info>	ConfigTokenizer::start_tokenization()
 {
 	while (std::getline(file, line))
     {
@@ -43,6 +43,7 @@ void	ConfigTokenizer::start_tokenization()
 
         line_num++;
     }
+	return this->tokens_queue;
 }
 
 void	ConfigTokenizer::process_line_tokens()
@@ -100,9 +101,9 @@ void	ConfigTokenizer::append_token_to_queue()
 
         chunk = get_next_chunk();
 
-        tokens_queue.push(normalize_token(chunk, line_num));
-
         token.erase(0, chunk.length());
+
+        tokens_queue.push(normalize_token(chunk));
     }
 }
 
@@ -135,6 +136,7 @@ std::string	ConfigTokenizer::get_quoted_string()
     char buff[quoted.length() + 1];
 
     streamed_line.read(buff, quoted.length());
+	return quoted;
 }
 
 std::string	ConfigTokenizer::capture_chars_after_quote()
@@ -165,6 +167,7 @@ std::string	ConfigTokenizer::capture_chars_after_quote()
 		else
 			escaped = false;
 	}
+	return post_quote_data;
 }
 
 std::string	ConfigTokenizer::get_next_chunk()
@@ -192,13 +195,66 @@ std::string	ConfigTokenizer::get_next_chunk()
             else
                 return token.substr(0, i);
 		}
-		else if (token[i] == '\\' && !escaped)
+
+		if (token[i] == '\\' && !escaped)
 			escaped = true;
 		else
 			escaped = false;
 	}
 	return token;
 }
+ 
+token_info	ConfigTokenizer::normalize_token(std::string & _token)
+{
+	token_info	info;
+	bool		escaped = false;
+	bool		quoted = false;
+	bool		removed_one = false;
+	char		_quote;
+
+	for (size_t i = 0; i < _token.length(); i++)
+	{
+		if (removed_one && i--)
+			removed_one = false;
+
+		if (!escaped && (_token[i] == '\'' || _token[i] == '"'))
+		{
+			if (quoted && _token[i] == _quote)
+				quoted = false;
+			else if (!quoted)
+			{
+				_quote = _token[i];
+				quoted = true;
+			}
+
+			if (_token[i] == _quote)
+			{
+				_token.erase(i, 1);
+				removed_one = true;
+			}
+		}
+
+		if (_token[i] == '\\' && !escaped)
+		{
+			_token.erase(i, 1);
+			removed_one = true;
+			escaped = true;
+		}
+		else
+			escaped = false;
+	}
+
+	info.token = _token;
+    info.line_num = line_num;
+
+	if (_token == ";" || _token == "{" || _token == "}")
+		info.is_sep = true;
+	else
+		info.is_sep = false;
+	
+	return info;
+}
+
 /* --------------------- Utils --------------------- */
 
 void	ConfigTokenizer::remove_leading_spaces()
@@ -223,7 +279,8 @@ char	ConfigTokenizer::leading_quote_or_wspace(const std::string & line)
 			return line[i];
 		else if (isspace(line[i]))
 			return '-';
-		else if (line[i] == '\\' && !escaped)
+
+		if (line[i] == '\\' && !escaped)
 			escaped = true;
 		else
 			escaped = false;

@@ -9,9 +9,9 @@
 
 class ConfigTokenizer {
 
-    public :
+	public :
 
-        static std::queue<token_info>   tokenize(const std::string & file_name);
+		static std::queue<token_info>   tokenize(const std::string & file_name);
 
     private :
 
@@ -20,13 +20,14 @@ class ConfigTokenizer {
 		~ConfigTokenizer();
 
         void    	open_config_file(std::string file_name);
-		void		start_tokenization();
+		std::queue<token_info>		start_tokenization();
 		void		process_line_tokens();
 		void		extract_quoted_token();
 		void		append_token_to_queue();
 		std::string	get_quoted_string();
 		std::string	capture_chars_after_quote();
 		std::string	get_next_chunk();
+		token_info	normalize_token(std::string & token);
 
 		/* --------------------- Utils --------------------- */
 

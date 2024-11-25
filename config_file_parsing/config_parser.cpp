@@ -6,64 +6,13 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:04:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/24 18:30:00 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/25 21:18:22 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../webserv.hpp"
 
 /* Removing the escape characters from the token before storing it */
-
-// \# \; \{ 
-
-
-static token_info normalize_token(std::string token, unsigned int line_num)
-{
-    token_info  info;
-	bool        removed_one;
-    bool        escaped;
-    char        quote;
-
-	if (token == ";" || token == "{" || token == "}")
-    {
-        info.token = token;
-        info.line_num = line_num;
-        info.is_sep = true;
-    	return info;
-    }
-
-	removed_one = false;
-    escaped = false;
-	quote = '-';
-
-	for (size_t i = 0; i < token.length(); i++)
-	{
-		if (removed_one)
-		{
-			removed_one = false;
-            i--;
-		}
-
-        if ((token[i] == '\\') && !escaped && (i != token.length() - 1) && ((token[i + 1] == '\\')
-            || (token[i + 1] == ';') || (token[i + 1] == '{') || (token[i + 1] == '}')
-            || (token[i + 1] == '#') || (token[i + 1] == '\'') || (token[i + 1] == '"')))
-        {
-            token.erase(i, 1);
-            escaped = true;
-            removed_one = true;
-        }
-		else if (!escaped && (token[i] == '\'' || token[i] == '"'))
-		{
-			if (quote != '-')
-			quote = token[i];
-		}
-		else
-			escaped = false;   
-
-	}
-	
-}
-
 static token_info normalize_token(std::string token, unsigned int line_num)
 {
     token_info  info;
