@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 14:47:39 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/09 16:22:03 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/27 14:08:09 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ static void    store_http_directives(HttpContext& http_config, std::queue<token_
     }
     else if (token == "server")
     {
-
         tokens_queue.pop();
         store_config(http_config, tokens_queue, file_name, "server");
     }

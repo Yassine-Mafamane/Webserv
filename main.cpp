@@ -6,12 +6,11 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:05:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/25 23:05:59 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/26 10:10:38 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
-#include "config_file_parsing/ConfigTokenizer.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -39,12 +38,7 @@ int main(int argc, char *argv[])
         HttpContext                         http_config;
         int                                 kqueue_fd;
 
-        std::queue<token_info> queue = ConfigTokenizer::tokenize(file_name);
-        while(!queue.empty())
-        {
-            std::cout << "\"" << queue.front().token <<  "\"" << std::endl;
-            queue.pop();
-        }
+        
         exit (1);
         parse_config_file(file_name, http_config);
         setup_servers(http_config, activeListners);

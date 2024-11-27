@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 13:01:34 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/30 22:38:00 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/27 10:26:23 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,10 +42,7 @@ void    HttpContext::set_error_page(const std::pair <unsigned short, std::string
 
 void    HttpContext::set_auto_index(bool on_off)
 {
-    if (on_off)
-        this->auto_index = true;
-    else
-        this->auto_index = false;
+    this->auto_index = on_off;
 }
 
 void    HttpContext::set_cgi_extension(const std::string& extension)

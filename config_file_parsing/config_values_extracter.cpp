@@ -6,12 +6,13 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 15:44:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/01 18:56:14 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/27 17:47:02 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../webserv.hpp"
 
+// single string value and change the set auto index method to take a string instead of a boolean
 bool    extract_autoindex_value(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::string token;
@@ -87,6 +88,7 @@ std::pair <unsigned short, std::string> extract_error_page_info(std::queue<token
     return std::make_pair(error_code, token);  
 }
 
+// single string value and change the set cgi extension to validate the extension
 std::string extract_cgi_extension(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::string cgi_extension;
@@ -118,6 +120,7 @@ std::string extract_cgi_extension(std::queue<token_info>& tokens_queue, std::str
     return cgi_extension;  
 }
 
+// extract_port_nums
 std::vector<unsigned short>  extract_port_number(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::vector<unsigned short>  port_nums;
@@ -155,6 +158,7 @@ std::vector<unsigned short>  extract_port_number(std::queue<token_info>& tokens_
     return port_nums;  
 }
 
+// single string value.
 std::string    extract_root_dir(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::string root;
@@ -184,6 +188,8 @@ std::string    extract_root_dir(std::queue<token_info>& tokens_queue, std::strin
     return root;  
 }
 
+
+// single string value
 std::string extract_upload_dir(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::string directory;
@@ -213,6 +219,7 @@ std::string extract_upload_dir(std::queue<token_info>& tokens_queue, std::string
     return directory;  
 }
 
+// single string value
 std::string extract_index(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::string index;
@@ -244,6 +251,7 @@ std::string extract_index(std::queue<token_info>& tokens_queue, std::string file
     return index;  
 }
 
+// MULTIPLE string value
 std::vector<std::string>    extract_srv_names(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::vector<std::string>    names;
@@ -275,6 +283,7 @@ std::vector<std::string>    extract_srv_names(std::queue<token_info>& tokens_que
     return names; 
 }
 
+// extract max body size
 size_t    extract_max_body_size(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::string     token;
@@ -303,6 +312,8 @@ size_t    extract_max_body_size(std::queue<token_info>& tokens_queue, std::strin
     return size;
 }
 
+
+// multiple string value
 std::vector<std::string>    extract_allowed_methods(std::queue<token_info>& tokens_queue, std::string file_name)
 {
     std::vector<std::string>    methods;
@@ -380,6 +391,8 @@ std::pair <unsigned short, std::string> extract_redirection_info(std::queue<toke
 
     return redirection_info; 
 }
+
+// single string value
 
 std::string extract_host_name(std::queue<token_info>& tokens_queue, std::string file_name)
 {

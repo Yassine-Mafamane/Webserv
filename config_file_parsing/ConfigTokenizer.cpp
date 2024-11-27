@@ -97,7 +97,11 @@ void	ConfigTokenizer::append_token_to_queue()
     while (token.length())
     {
         if (token[0] == '#')
+		{
+			streamed_line.str("");
+			streamed_line.clear();
             break;
+		}
 
         chunk = get_next_chunk();
 
@@ -188,7 +192,7 @@ std::string	ConfigTokenizer::get_next_chunk()
 				quoted = true;
 			}
 		}
-		else if (!quoted && !escaped && (token[i] == ';' || token[i] == '{' || token[i] == '}'))
+		else if (!quoted && !escaped && (token[i] == ';' || token[i] == '{' || token[i] == '}' || token[i] == '#'))
 		{
 			if (!i)
                 return token.substr(0, 1);

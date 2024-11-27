@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:07:46 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/25 22:22:15 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/27 16:02:33 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,37 @@
 #include <sstream>
 #include <fstream>
 #include <fcntl.h>
+
+
+///////////////////////
+
+// Config directives :
+
+// Http context Specefic
+#define	SERVER_DIR			"server"
+#define	MAX_BODY_DIR		"client_max_body_size"
+
+#define	CGI_EXCT_DIR		"cgi_extention"
+#define	AUTO_INDX_DIR		"autoindex"
+#define	ERR_PAGE_DIR		"error_page"
+
+// Server context Specefic
+#define	LOCATION_DIR		"location"
+#define	LISTEN_DIR			"listen"
+#define	SERVER_NAMES_DIR	"server_names"
+#define	HOST_DIR			"host"
+#define	UPLOAD_DIR			"upload_directory"
+
+#define	ALLOWED_METHODS_DIR	"allowed_methods"
+#define	INDEX_DIR			"index"
+#define	ROOT_DIR			"root"
+
+// Location context Specefic
+#define REDIRECTION_DIR		"return"
+
+/////////////////////
+
+
 
 typedef struct token_info
 {

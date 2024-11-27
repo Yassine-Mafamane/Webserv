@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 17:08:12 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/25 16:44:21 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/27 10:17:05 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,13 @@
 void    throw_config_parse_exception(std::string type, std::string token, std::string file_name, unsigned int line_num)
 {
     std::ostringstream  error_info;
-    
-    if (type == "Unexpected")
+
+    if (type == "Empty")
+    {
+        error_info << "webserv : Configuration file is empty. Please provide a valid configuration.";
+        throw std::invalid_argument(error_info.str());
+    }
+    else if (type == "Unexpected")
     {
         error_info << "webserv : unexpected \"" + token + "\" in " + file_name + ":";
         error_info <<  line_num;
