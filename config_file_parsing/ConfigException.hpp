@@ -16,7 +16,7 @@ typedef enum	e_ConfigParseError
 	UNTERMINATED,
 	WRONG_ARGS_NUM,
 	END_OF_FILE,
-	NO_OPENNING
+	NO_OPENING
 }	ConfigParseError;
 
 class ConfigException {

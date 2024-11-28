@@ -7,7 +7,7 @@ ConfigValueExtractor::ConfigValueExtractor(std::queue<token_info> & tokens) : to
 
 }
 
-std::string	ConfigValueExtractor::extract_single_string_value()
+std::string	ConfigValueExtractor::extract_single_string_value(void (ConfigValueExtractor::*validator)(const token_info &))
 {
 	std::string	value;
 	token_info	directive;
@@ -22,6 +22,9 @@ std::string	ConfigValueExtractor::extract_single_string_value()
 		ConfigException::throwParsingError(UNEXPECTED, token);
 	else
 		value = token.token;
+
+	if (validator)
+		(this->*validator)(token);
 
 	tokens_queue.pop();
 	token = tokens_queue.front();
@@ -146,4 +149,10 @@ void	ConfigValueExtractor::validate_max_body_size(const token_info & token)
 	{
 		ConfigException::throwWrongValueError(MAX_BODY_DIR, token);
 	}
+}
+
+void	ConfigValueExtractor::validate_auto_indx_value(const token_info & token)
+{
+	if ((token.token != "on") && (token.token != "off"))
+		ConfigException::throwWrongValueError(AUTO_INDX_DIR, token);
 }

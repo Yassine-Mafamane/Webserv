@@ -9,6 +9,9 @@ void	ConfigException::throwParsingError(const ConfigParseError & e, const token_
 
     switch (e)
 	{
+        case EMPTY :
+             error_info << "webserv : Configuration file is empty. Please provide a valid configuration.";
+             break ;
         case UNEXPECTED :
 			error_info << "webserv : unexpected \"" + token.token + "\" in " + ConfigException::file_name + ":";
 			error_info << token.line_num;
@@ -19,6 +22,18 @@ void	ConfigException::throwParsingError(const ConfigParseError & e, const token_
 			break ;
 		case WRONG_ARGS_NUM :
 			error_info << "webserv : invalid number of arguments in \"" + token.token + "\" directive in " + ConfigException::file_name + ":";
+			error_info << token.line_num;
+			break ;
+        case NOT_ALLOWED :
+            error_info << "webserv : \"" + token.token + "\" directive is not allowed here in " + ConfigException::file_name + ":";
+			error_info << token.line_num;
+			break ;
+		case UNKNOWN :
+        	error_info << "webserv : unknown directive \"" + token.token + "\"in " + ConfigException::file_name + ":";
+			error_info << token.line_num;
+			break ;
+        case NO_OPENING :
+            error_info << "webserv : missing opening \"{\" in " + ConfigException::file_name + ":";
 			error_info << token.line_num;
 			break ;
     }

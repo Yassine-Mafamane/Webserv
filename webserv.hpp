@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:07:46 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/27 16:02:33 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/28 04:30:41 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,9 +95,11 @@ std::string                             extract_host_name(std::queue<token_info>
 
     // Token checking :
 
-bool                                    is_http_ctx_dir(std::string directive);
-bool                                    is_server_ctx_dir(std::string directive);
-bool                                    is_location_ctx_dir(std::string directive);
+bool                                    is_http_ctx_dir(const std::string & directive);
+bool                                    is_server_ctx_dir(const std::string & directive);
+bool                                    is_location_ctx_dir(const std::string & directive);
+bool                                    is_a_valid_dir(const std::string & directive);
+
 
     // Error throwing :
 

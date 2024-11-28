@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/24 14:50:21 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/28 05:54:12 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ class HttpContext {
         void    set_error_page      ( const std::pair <unsigned short, std::string>& error_info );
         void    set_new_server      ( void ); //  This method creates a new Server Context when a new server directive is found in the configuration file.
         void    set_cgi_extension   ( const std::string& extension );
-        void    set_auto_index      ( bool on_off );
+		void	set_auto_index		(std::string on_off);
         void    set_max_body_size   ( size_t limit ); // TODO : The max body size has to be used 
 
         /* Getters */
