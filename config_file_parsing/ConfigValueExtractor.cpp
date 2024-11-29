@@ -171,6 +171,40 @@ std::string	ConfigValueExtractor::extract_location()
 	return token.token;
 }
 
+t_redirection_info			ConfigValueExtractor::extract_redirection_info()
+{
+	t_redirection_info	info;
+	token_info			token;
+	token_info			directive;
+
+	directive = tokens_queue.front();
+
+	tokens_queue.pop();
+	token = tokens_queue.front();
+
+	if (token.is_sep)
+		ConfigException::throwParsingError(UNEXPECTED, token);
+
+	validate_redirection_code(token);
+
+	info.status_code = std::stoi(token.token);
+
+	tokens_queue.pop();
+    token = tokens_queue.front();
+
+	if (token.is_sep && token.token != ";")
+		ConfigException::throwParsingError(UNTERMINATED, directive);
+	else if(!token.is_sep)
+	{
+		info.target = token.token;
+		tokens_queue.pop();
+	}
+
+	token = tokens_queue.front();
+	validate_directive_ending(token, directive);
+	return info;
+}
+
 void	ConfigValueExtractor::validate_directive_ending(const token_info & token, const token_info & directive)
 {
 	if (token.is_sep && token.token == ";")
@@ -224,6 +258,15 @@ void	ConfigValueExtractor::validate_http_code_value(const token_info & token)
 		|| token.token > "599"))
 	{
 		ConfigException::throwWrongValueError(ERR_PAGE_DIR, token);
+	}
+}
+
+void	ConfigValueExtractor::validate_redirection_code(const token_info & token)
+{
+	if (!is_all_digits(token.token)
+		|| token.token.length() > 3)
+	{
+		ConfigException::throwWrongValueError(REDIRECTION_DIR, token);
 	}
 }
 

@@ -241,6 +241,11 @@ void	ConfigParser::storelocationDirs()
 		std::vector<std::string>	value = extractor.extract_multi_string_value(&ConfigValueExtractor::validate_method);
 		latest_location.set_allowed_methods(value);
 	}
+	else if (token.token == REDIRECTION_DIR)
+	{
+		t_redirection_info	value = extractor.extract_redirection_info();
+		latest_location.set_redirection(value);
+	}
 }
 
 bool	ConfigParser::is_duplicated_http_dir(const std::string & directive)

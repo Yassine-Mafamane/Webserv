@@ -11,6 +11,11 @@ typedef struct	s_error_page
 	std::string		path;
 }	t_error_page;
 
+typedef struct	s_redirection_info
+{
+	unsigned short	status_code;
+	std::string		target;
+}	t_redirection_info;
 
 
 #endif

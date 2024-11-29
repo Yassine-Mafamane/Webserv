@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:25 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/29 06:03:17 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/29 09:05:44 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,14 +36,14 @@ class LocationContext {
     /* LocationContext Constructor */
     LocationContext( void );
     LocationContext( const std::string & location );
-    
+
     /* LocationContext Destructor */
     ~LocationContext();
 
     /* Setters */
 
     void    set_error_page      ( const t_error_page & error_info );
-    void    set_redirection     ( std::pair<unsigned short, std::string> redirection_info );
+    void    set_redirection     ( t_redirection_info redirection_info );
     void    set_root_directory  ( std::string root );
     void    set_cgi_extension   ( const std::string& extension );
     void    set_upload_dir      ( std::string directory );
@@ -58,7 +58,7 @@ class LocationContext {
 
         std::vector<t_error_page>                               error_pages;
 
-        std::pair <unsigned short, std::string>                 redirection;
+        t_redirection_info                                      redirection;
 
         std::vector<std::string>                                allowed_methods;
 

@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 20:30:49 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/29 06:04:47 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/29 08:59:33 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 LocationContext::LocationContext( const std::string & location ) : location(location)
 {
-    redirection.first = 0; // to be able to determine if a redirection was provided or not
+    redirection.status_code = 0; // to be able to determine if a redirection was provided or not
 
     root_is_set = false;
     index_is_set = false;
@@ -27,7 +27,7 @@ LocationContext::LocationContext( const std::string & location ) : location(loca
 
 LocationContext::LocationContext( void )
 {
-    redirection.first = 0; // to be able to determine if a redirection was provided or not
+    redirection.status_code = 0; // to be able to determine if a redirection was provided or not
 
     root_is_set = false;
     index_is_set = false;
@@ -99,9 +99,10 @@ void    LocationContext::set_allowed_methods( std::vector<std::string> methods )
     this->methods_is_set = true;
 }
 
-void    LocationContext::set_redirection( std::pair<unsigned short, std::string> redirection_info )
+void    LocationContext::set_redirection( t_redirection_info redirection_info )
 {
     this->redirection = redirection_info;
+    this->redirect_is_set = true;
 }
 
 void    LocationContext::set_location( std::string location )
