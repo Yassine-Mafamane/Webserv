@@ -36,6 +36,14 @@ void	ConfigException::throwParsingError(const ConfigParseError & e, const token_
             error_info << "webserv : missing opening \"{\" in " + ConfigException::file_name + ":";
 			error_info << token.line_num;
 			break ;
+        case DUPLICATION :
+            error_info << "webserv : \"" + token.token + "\" directive is duplicate in " + ConfigException::file_name + ":";
+			error_info << token.line_num;
+            break ;
+        case UNCLOSED_CTX :
+            error_info << "webserv : unexpected end of file, expecting \"}\" in " + file_name + ":";
+            error_info <<  token.line_num;
+            break ;
     }
 
 	throw std::invalid_argument(error_info.str()); // TODO : Better create a specific exception type

@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 16:37:22 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/30 22:38:21 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/29 05:17:18 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,16 +32,15 @@ ServerContext::~ServerContext()
     
 }
 
-void    ServerContext::set_error_page(const std::pair <unsigned short, std::string>& error_info)
+void    ServerContext::set_error_page(const t_error_page& error_info)
 {
-    std::vector<std::pair <unsigned short, std::string> >::iterator it;
+    std::vector<t_error_page>::iterator it;
 
     for (it = this->error_pages.begin(); it != this->error_pages.end(); it++)
     {
-        if ((*it).first == error_info.first)
+        if ((*it).err_code == error_info.err_code)
         {
-            (*it).second = error_info.second;
-
+            (*it).path = error_info.path;
             return ;
         }
     }
@@ -49,11 +48,11 @@ void    ServerContext::set_error_page(const std::pair <unsigned short, std::stri
     this->error_pages.push_back(error_info);
 }
 
-void   ServerContext::set_new_location( void )
+void   ServerContext::set_new_location( const std::string & location )
 {
-    LocationContext   new_location;
+    LocationContext   new_location(location);
 
-    std::vector<std::pair <unsigned short, std::string> >::iterator it;
+    std::vector<t_error_page>::iterator it;
 
     /* Making the new location inherit the serverContext directives. */
     for (it = this->error_pages.begin(); it < this->error_pages.end(); it++)
@@ -72,49 +71,59 @@ void   ServerContext::set_new_location( void )
 void    ServerContext::set_ports( std::vector<unsigned short> ports )
 {
     this->ports.assign(ports.begin(), ports.end());
+    this->port_is_set = true;
 }
 
 void    ServerContext::set_root_directory( std::string root )
 {
     this->root_directory = root;
+    this->root_is_set = true;
 }
 
 void    ServerContext::set_cgi_extension(const std::string& extension)
 {
     this->cgi_extension = extension;
+    this->cgi_ext_is_set = true;
 }
 
 void    ServerContext::set_upload_dir( std::string directory )
 {
     this->upload_dir = directory;
+    this->upl_dir_is_set = true;
 }
 
 void    ServerContext::set_index( std::string index )
 {
     this->index = index;
+    this->index_is_set = true;
 }
 
 void    ServerContext::set_server_names( std::vector<std::string> names )
 {
     this->server_names.assign(names.begin(), names.end());
+    this->srv_names_is_set = true;
 }
 
-void    ServerContext::set_auto_index(bool on_off)
+void    ServerContext::set_auto_index(const std::string & on_off)
 {
-    if (on_off)
+    if (on_off == "on")
         this->auto_index = true;
     else
         this->auto_index = false;
+
+	this->auto_ind_is_set = true;
 }
 
 void    ServerContext::set_allowed_methods( std::vector<std::string> methods )
 {
     this->allowed_methods.assign(methods.begin(), methods.end());
+    this->methods_is_set = true;
 }
 
 void    ServerContext::set_host( std::string host )
 {
     this->host = host;
+    this->host_is_set = true;
 }
 
 
@@ -126,7 +135,7 @@ LocationContext&  ServerContext::get_latest_location( void )
 
 /* Getters */
 
-const std::vector<std::pair <unsigned short, std::string> >& ServerContext::get_error_pages( void ) const
+const std::vector<t_error_page>& ServerContext::get_error_pages( void ) const
 {
     return this->error_pages;
 }

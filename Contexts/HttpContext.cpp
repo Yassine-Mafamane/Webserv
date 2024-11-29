@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 13:01:34 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/28 05:53:36 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/29 03:34:02 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,50 +14,57 @@
 
 HttpContext::HttpContext( void )
 {
-    this->auto_index = false;
-    this->max_body_size = 1000000;
+    auto_index = false;
+    max_body_size = 1000000;
+
+    cgi_ext_is_set = false;
+    auto_ind_is_set = false;
+    max_body_is_set = false;
 }
 
 HttpContext::~HttpContext()
 {
-    
+     
 }
 
-void    HttpContext::set_error_page(const std::pair <unsigned short, std::string>& error_info)
+void    HttpContext::set_error_page( const t_error_page& error_page )
 {
-    std::vector<std::pair <unsigned short, std::string> >::iterator it;
+    std::vector<t_error_page>::iterator it;
 
     for (it = this->error_pages.begin(); it != this->error_pages.end(); it++)
     {
-        if ((*it).first == error_info.first)
+        if ((*it).err_code == error_page.err_code)
         {
-            (*it).second = error_info.second;
+            (*it).path = error_page.path;
 
             return ;
         }
     }
 
-    this->error_pages.push_back(error_info);
+    this->error_pages.push_back(error_page);
 }
 
-void    HttpContext::set_auto_index(std::string on_off)
+void    HttpContext::set_auto_index(const std::string & on_off)
 {
     if (on_off == "on")
         this->auto_index = true;
     else
         this->auto_index = false;
+
+	this->auto_ind_is_set = true;
 }
 
 void    HttpContext::set_cgi_extension(const std::string& extension)
 {
     this->cgi_extension = extension;
+    this->cgi_ext_is_set = true;
 }
 
 void   HttpContext::set_new_server( void )
 {
     ServerContext   new_server;
 
-    std::vector<std::pair <unsigned short, std::string> >::iterator it;
+    std::vector<t_error_page>::iterator it;
 
     /* Making the new server inherit the httpContext directives. */
     for (it = this->error_pages.begin(); it < this->error_pages.end(); it++)
@@ -73,6 +80,7 @@ void   HttpContext::set_new_server( void )
 void    HttpContext::set_max_body_size( size_t limit )
 {
     this->max_body_size = limit;
+	this->max_body_is_set = true;
 }
 
 
@@ -86,7 +94,7 @@ const std::vector<ServerContext>& HttpContext::get_servers( void ) const
     return this->servers;
 }
 
-const std::vector<std::pair <unsigned short, std::string> >& HttpContext::get_error_pages( void ) const
+const std::vector<t_error_page>& HttpContext::get_error_pages( void ) const
 {
     return this->error_pages;
 }

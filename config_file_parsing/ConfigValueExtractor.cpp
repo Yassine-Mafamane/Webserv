@@ -35,7 +35,7 @@ std::string	ConfigValueExtractor::extract_single_string_value(void (ConfigValueE
 	return value;
 }
 
-std::vector<std::string>	ConfigValueExtractor::extract_multi_string_value()
+std::vector<std::string>	ConfigValueExtractor::extract_multi_string_value(void (ConfigValueExtractor::*validator)(const token_info &))
 {
 	std::vector<std::string>	value;
 	token_info					directive;
@@ -51,6 +51,9 @@ std::vector<std::string>	ConfigValueExtractor::extract_multi_string_value()
 
 	while (!tokens_queue.empty() && !token.is_sep)
 	{
+		if (validator)
+			(this->*validator)(token);
+
 		value.push_back(token.token);
 		tokens_queue.pop();
 		token = tokens_queue.front();
@@ -62,9 +65,9 @@ std::vector<std::string>	ConfigValueExtractor::extract_multi_string_value()
 	return value;
 }
 
-std::vector<unsigned int>	ConfigValueExtractor::extract_port_nums()
+std::vector<unsigned short>	ConfigValueExtractor::extract_port_nums()
 {
-	std::vector<unsigned int>	value;
+	std::vector<unsigned short>	value;
 	token_info					directive;
 	token_info					token;
 
@@ -118,6 +121,56 @@ size_t    ConfigValueExtractor::extract_max_body_size()
     return size;
 }
 
+t_error_page	ConfigValueExtractor::extract_error_page_info()
+{
+	t_error_page	info;
+	token_info		token;
+	token_info		directive;
+
+	directive = tokens_queue.front();
+
+    tokens_queue.pop();
+    token = tokens_queue.front();
+
+	if (token.is_sep)
+		ConfigException::throwParsingError(UNEXPECTED, token);
+	
+	validate_http_code_value(token);
+
+	info.err_code = std::stoi(token.token);
+
+	tokens_queue.pop();
+    token = tokens_queue.front();
+
+	if (token.is_sep && token.token == ";")
+		ConfigException::throwParsingError(WRONG_ARGS_NUM, directive);
+	if (token.is_sep)
+		ConfigException::throwParsingError(UNEXPECTED, token);
+
+	info.path = token.token;
+
+	tokens_queue.pop();
+    token = tokens_queue.front();
+
+    validate_directive_ending(token, directive);
+	return info;
+}
+
+std::string	ConfigValueExtractor::extract_location()
+{
+	std::string	value;
+	token_info	token;
+
+	tokens_queue.pop();
+	token = tokens_queue.front();
+
+	if (token.is_sep)
+		ConfigException::throwParsingError(UNEXPECTED, token);
+	
+	tokens_queue.pop();
+	return token.token;
+}
+
 void	ConfigValueExtractor::validate_directive_ending(const token_info & token, const token_info & directive)
 {
 	if (token.is_sep && token.token == ";")
@@ -155,4 +208,32 @@ void	ConfigValueExtractor::validate_auto_indx_value(const token_info & token)
 {
 	if ((token.token != "on") && (token.token != "off"))
 		ConfigException::throwWrongValueError(AUTO_INDX_DIR, token);
+}
+
+void	ConfigValueExtractor::validate_cgi_ext_value(const token_info & token)
+{
+	if (token.token != ".php")
+		ConfigException::throwWrongValueError(CGI_EXCT_DIR, token);
+}
+
+void	ConfigValueExtractor::validate_http_code_value(const token_info & token)
+{
+	if ((!is_all_digits(token.token)
+		|| token.token.length() != 3
+		|| token.token < "300"
+		|| token.token > "599"))
+	{
+		ConfigException::throwWrongValueError(ERR_PAGE_DIR, token);
+	}
+}
+
+void	ConfigValueExtractor::validate_method(const token_info & token)
+{
+	if (token.token != "GET"
+		&& token.token != "POST"
+		&& token.token != "DELETE"
+		&& token.token != "HEAD")
+	{
+		ConfigException::throwWrongValueError(ALLOWED_METHODS_DIR, token);
+	}
 }

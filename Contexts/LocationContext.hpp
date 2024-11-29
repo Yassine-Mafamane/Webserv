@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:25 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/10/30 22:38:56 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/29 06:03:17 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
+
+#include "../config_file_parsing/config_structs.hpp"
 
 class LocationContext {
 
@@ -33,28 +35,28 @@ class LocationContext {
 
     /* LocationContext Constructor */
     LocationContext( void );
-
+    LocationContext( const std::string & location );
+    
     /* LocationContext Destructor */
     ~LocationContext();
 
     /* Setters */
 
-    void    set_error_page      ( const std::pair<unsigned short, std::string>& error_info );
+    void    set_error_page      ( const t_error_page & error_info );
     void    set_redirection     ( std::pair<unsigned short, std::string> redirection_info );
     void    set_root_directory  ( std::string root );
     void    set_cgi_extension   ( const std::string& extension );
     void    set_upload_dir      ( std::string directory );
     void    set_index           ( std::string index );
-    void    set_auto_index      ( bool on_off );
+    void    set_auto_index      ( const std::string & on_off );
     void    set_allowed_methods ( std::vector<std::string> methods );
-    void    make_exact          ( void );
     void    set_location        ( std::string location );
 
     /* Getters */
 
     private :
 
-        std::vector<std::pair <unsigned short, std::string> >   error_pages;
+        std::vector<t_error_page>                               error_pages;
 
         std::pair <unsigned short, std::string>                 redirection;
 
@@ -72,7 +74,6 @@ class LocationContext {
 
         bool                                                    auto_index;
 
-        bool                                                    is_exact;
 };
 
 

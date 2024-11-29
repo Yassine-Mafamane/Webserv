@@ -5,7 +5,7 @@
 
 ConfigParser::ConfigParser(std::queue<token_info> & tokens) : tokens_queue(tokens), extractor(tokens)
 {
-	is_inside_serv = false;
+
 }
 
 
@@ -47,8 +47,6 @@ void    ConfigParser::validate_tokens_queue(const std::queue<token_info> & token
 
 void	ConfigParser::storeConfig(const std::string & context)
 {
-	bool	is_inside_lct = false;
-
 	if (tokens_queue.front().token != "{")
 	    ConfigException::throwParsingError(NO_OPENING, tokens_queue.front());
 
@@ -56,32 +54,26 @@ void	ConfigParser::storeConfig(const std::string & context)
 
 	while (!tokens_queue.empty() && tokens_queue.front().token != "}")
 	{
-	    /* Here i will be extracting directives and store them one by one */
 	    if (context == "http")
-	    {
-	        is_inside_serv = false;
 	        storeHttpDirs();
-	    }
 	    else if (context == "server")
-	    {
-	        if (!is_inside_serv)
-	            http_config.set_new_server();
-	        is_inside_serv = true;
-	        store_serv_directives(http_config, tokens_queue, file_name);
-	    }
+	        storeServDirs();
 	    else if (context == "location")
-	    {
-	        store_location_directives(http_config.get_latest_server().get_latest_location(), tokens_queue, file_name);
-	    }
+	        storelocationDirs();
 	}
 
+	validate_context_closure(context);
+}
+
+void	ConfigParser::validate_context_closure(const std::string & context)
+{
 	if (tokens_queue.empty())
-	    throw_config_parse_exception("unclosed_ctx", "", file_name, tokens_queue.front().line_num);
+	    ConfigException::throwParsingError(UNCLOSED_CTX, tokens_queue.front());
 
 	tokens_queue.pop();
 
 	if (context == "http" && !tokens_queue.empty())
-	    throw_config_parse_exception("Unexpected", tokens_queue.front().token, file_name, tokens_queue.front().line_num);
+	    ConfigException::throwParsingError(UNEXPECTED, tokens_queue.front());
 }
 
 void	ConfigParser::find_bad_token_type(token_info & token)
@@ -100,16 +92,197 @@ void	ConfigParser::storeHttpDirs()
 
 	if (!is_http_ctx_dir(token.token))
 		find_bad_token_type(token);
-	
+
 	if (token.token == SERVER_DIR)
 	{
-		tokens_queue.pop();
-		storeConfig("server");
+		setup_new_server();
+		return storeConfig("server");
 	}
-	else if (token.token == AUTO_INDX_DIR)
+
+	if (is_duplicated_http_dir(token.token))
+		ConfigException::throwParsingError(DUPLICATION, token);
+
+	if (token.token == AUTO_INDX_DIR)
 	{
 		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_auto_indx_value);
 		http_config.set_auto_index(value);
 	}
+	else if (token.token == CGI_EXCT_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_cgi_ext_value);
+		http_config.set_cgi_extension(value);
+	}
+	else if (token.token == MAX_BODY_DIR)
+	{
+		size_t	value = extractor.extract_max_body_size();
+		http_config.set_max_body_size(value);
+	}
+	else if (token.token == ERR_PAGE_DIR)
+	{
+		t_error_page	value = extractor.extract_error_page_info();
+		http_config.set_error_page(value);
+	}
 }
 
+void	ConfigParser::storeServDirs()
+{
+	token_info		token = tokens_queue.front();
+
+	if (!is_server_ctx_dir(token.token))
+		find_bad_token_type(token);
+
+	if (token.token == LOCATION_DIR)
+	{
+		setup_new_location();
+		return storeConfig("location");
+	}
+
+	ServerContext&	latest_server = http_config.get_latest_server();
+
+	if (is_duplicated_serv_dir(token.token, latest_server))
+		ConfigException::throwParsingError(DUPLICATION, token);
+
+	if (token.token == AUTO_INDX_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_auto_indx_value);
+		latest_server.set_auto_index(value);
+	}
+	else if (token.token == ERR_PAGE_DIR)
+	{
+		t_error_page	value = extractor.extract_error_page_info();
+		latest_server.set_error_page(value);
+	}
+	else if (token.token == CGI_EXCT_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_cgi_ext_value);
+		latest_server.set_cgi_extension(value);
+	}
+	else if (token.token == LISTEN_DIR)
+	{
+		std::vector<unsigned short> value = extractor.extract_port_nums();
+		latest_server.set_ports(value);
+	}
+	else if (token.token == ROOT_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(NULL);
+		latest_server.set_root_directory(value);
+	}
+	else if (token.token == UPLOAD_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(NULL);
+		latest_server.set_upload_dir(value);
+	}
+	else if (token.token == INDEX_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(NULL);
+		latest_server.set_index(value);
+	}
+	else if (token.token == SERVER_NAMES_DIR)
+	{
+		std::vector<std::string>	value = extractor.extract_multi_string_value(NULL);
+		latest_server.set_server_names(value);
+	}
+	else if (token.token == ALLOWED_METHODS_DIR)
+	{
+		std::vector<std::string>	value = extractor.extract_multi_string_value(&ConfigValueExtractor::validate_method);
+		latest_server.set_allowed_methods(value);
+	}
+	else if (token.token == HOST_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(NULL);
+		latest_server.set_host(value);
+	}
+}
+
+void	ConfigParser::storelocationDirs()
+{
+	token_info		token = tokens_queue.front();
+
+	if (!is_location_ctx_dir(token.token))
+		find_bad_token_type(token);
+
+	LocationContext&	latest_location = http_config.get_latest_server().get_latest_location();
+
+	if (is_duplicate_location_dir(token.token, latest_location))
+		ConfigException::throwParsingError(DUPLICATION, token);
+
+	if (token.token == AUTO_INDX_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_auto_indx_value);
+		latest_location.set_auto_index(value);
+	}
+	else if (token.token == CGI_EXCT_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_cgi_ext_value);
+		latest_location.set_cgi_extension(value);
+	}
+	else if (token.token == ERR_PAGE_DIR)
+	{
+		t_error_page	value = extractor.extract_error_page_info();
+		latest_location.set_error_page(value);
+	}
+	else if (token.token == ROOT_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(NULL);
+		latest_location.set_root_directory(value);
+	}
+	else if (token.token == UPLOAD_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(NULL);
+		latest_location.set_upload_dir(value);
+	}
+	else if (token.token == INDEX_DIR)
+	{
+		std::string	value = extractor.extract_single_string_value(NULL);
+		latest_location.set_index(value);
+	}
+	else if (token.token == ALLOWED_METHODS_DIR)
+	{
+		std::vector<std::string>	value = extractor.extract_multi_string_value(&ConfigValueExtractor::validate_method);
+		latest_location.set_allowed_methods(value);
+	}
+}
+
+bool	ConfigParser::is_duplicated_http_dir(const std::string & directive)
+{
+	return (((directive == AUTO_INDX_DIR) && http_config.auto_ind_is_set)
+			|| ((directive == CGI_EXCT_DIR) && http_config.cgi_ext_is_set)
+			|| ((directive == MAX_BODY_DIR) && http_config.max_body_is_set));
+}
+
+bool	ConfigParser::is_duplicated_serv_dir(const std::string & directive, const ServerContext & serv)
+{
+	return (((directive == AUTO_INDX_DIR) && serv.auto_ind_is_set)
+			|| ((directive == CGI_EXCT_DIR) && serv.cgi_ext_is_set)
+			|| ((directive == HOST_DIR) && serv.host_is_set)
+			|| ((directive == ROOT_DIR) && serv.root_is_set)
+			|| ((directive == LISTEN_DIR) && serv.port_is_set)
+			|| ((directive == INDEX_DIR) && serv.index_is_set)
+			|| ((directive == UPLOAD_DIR) && serv.upl_dir_is_set)
+			|| ((directive == ALLOWED_METHODS_DIR) && serv.methods_is_set)
+			|| ((directive == SERVER_NAMES_DIR) && serv.srv_names_is_set));
+}
+
+bool	ConfigParser::is_duplicate_location_dir(const std::string & directive, const LocationContext & location)
+{
+	return (((directive == AUTO_INDX_DIR) && location.auto_ind_is_set)
+			|| ((directive == CGI_EXCT_DIR) && location.cgi_ext_is_set)
+			|| ((directive == ROOT_DIR) && location.root_is_set)
+			|| ((directive == INDEX_DIR) && location.index_is_set)
+			|| ((directive == UPLOAD_DIR) && location.upl_dir_is_set)
+			|| ((directive == ALLOWED_METHODS_DIR) && location.methods_is_set)
+			|| ((directive == REDIRECTION_DIR) && location.redirect_is_set));
+}
+
+void	ConfigParser::setup_new_server()
+{
+	http_config.set_new_server();
+	tokens_queue.pop(); 		// removing the "server" directive token.
+}
+
+void	ConfigParser::setup_new_location()
+{
+    std::string	location = extractor.extract_location();
+
+	http_config.get_latest_server().set_new_location(location);
+}
