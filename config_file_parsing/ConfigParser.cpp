@@ -1,6 +1,6 @@
 
 
-#include "ConfigParser.hpp"
+#include "HttpConfigParser.hpp"
 
 
 ConfigParser::ConfigParser(std::queue<token_info> & tokens) : tokens_queue(tokens), extractor(tokens)
@@ -8,6 +8,32 @@ ConfigParser::ConfigParser(std::queue<token_info> & tokens) : tokens_queue(token
 
 }
 
+
+void	ConfigParser::validate_config()
+{
+    const std::vector<ServerContext> servers = http_config.get_servers();
+
+    if (servers.size() == 0)
+    {
+        throw std::invalid_argument("Configuration Error: Please specify at least one server within the Http context.");
+    }
+
+    std::vector<ServerContext>::const_iterator it = http_config.get_servers().begin();
+    std::vector<ServerContext>::const_iterator end = http_config.get_servers().end();
+
+    for (; it < end; it++)
+    {
+        if (it->get_host() == "")
+            throw std::invalid_argument("Configuration Error: Hostname required for server definition but not provided."); 
+
+        if (it->get_root_directory() == "")
+            throw std::invalid_argument("Configuration Error: Root directory required for server definition but not provided."); 
+
+        if (it->get_ports().size() == 0)
+            throw std::invalid_argument("Configuration Error: Please specify a port for all servers to listen on."); 
+    }
+
+}
 
 HttpContext	ConfigParser::getConfig(const std::string & file_name)
 {
@@ -26,6 +52,9 @@ HttpContext	ConfigParser::getConfig(const std::string & file_name)
 
 	parser.storeConfig("http");
 
+	parser.validate_config();
+
+	return parser.http_config;
 }
 
 void    ConfigParser::validate_tokens_queue(const std::queue<token_info> & tokens_queue)
@@ -52,8 +81,11 @@ void	ConfigParser::storeConfig(const std::string & context)
 
 	tokens_queue.pop();
 
-	while (!tokens_queue.empty() && tokens_queue.front().token != "}")
+	while (!tokens_queue.empty())
 	{
+		if (tokens_queue.front().is_sep && tokens_queue.front().token == "}")
+			break ;
+
 	    if (context == "http")
 	        storeHttpDirs();
 	    else if (context == "server")
@@ -106,16 +138,20 @@ void	ConfigParser::storeHttpDirs()
 	{
 		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_auto_indx_value);
 		http_config.set_auto_index(value);
+		http_config.auto_ind_is_set = true;
 	}
 	else if (token.token == CGI_EXCT_DIR)
 	{
 		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_cgi_ext_value);
 		http_config.set_cgi_extension(value);
+    	http_config.cgi_ext_is_set = true;
+
 	}
 	else if (token.token == MAX_BODY_DIR)
 	{
 		size_t	value = extractor.extract_max_body_size();
 		http_config.set_max_body_size(value);
+		http_config.max_body_is_set = true;
 	}
 	else if (token.token == ERR_PAGE_DIR)
 	{
@@ -146,6 +182,7 @@ void	ConfigParser::storeServDirs()
 	{
 		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_auto_indx_value);
 		latest_server.set_auto_index(value);
+		latest_server.auto_ind_is_set = true;
 	}
 	else if (token.token == ERR_PAGE_DIR)
 	{
@@ -156,41 +193,49 @@ void	ConfigParser::storeServDirs()
 	{
 		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_cgi_ext_value);
 		latest_server.set_cgi_extension(value);
+		latest_server.cgi_ext_is_set = true;
 	}
 	else if (token.token == LISTEN_DIR)
 	{
 		std::vector<unsigned short> value = extractor.extract_port_nums();
 		latest_server.set_ports(value);
+		latest_server.port_is_set = true;
 	}
 	else if (token.token == ROOT_DIR)
 	{
 		std::string	value = extractor.extract_single_string_value(NULL);
 		latest_server.set_root_directory(value);
+		latest_server.root_is_set = true;
 	}
 	else if (token.token == UPLOAD_DIR)
 	{
 		std::string	value = extractor.extract_single_string_value(NULL);
 		latest_server.set_upload_dir(value);
+		latest_server.upl_dir_is_set = true;
 	}
 	else if (token.token == INDEX_DIR)
 	{
 		std::string	value = extractor.extract_single_string_value(NULL);
 		latest_server.set_index(value);
+		latest_server.index_is_set = true;
 	}
 	else if (token.token == SERVER_NAMES_DIR)
 	{
 		std::vector<std::string>	value = extractor.extract_multi_string_value(NULL);
 		latest_server.set_server_names(value);
+		latest_server.srv_names_is_set = true;
 	}
 	else if (token.token == ALLOWED_METHODS_DIR)
 	{
 		std::vector<std::string>	value = extractor.extract_multi_string_value(&ConfigValueExtractor::validate_method);
 		latest_server.set_allowed_methods(value);
+		latest_server.methods_is_set = true;
 	}
 	else if (token.token == HOST_DIR)
 	{
 		std::string	value = extractor.extract_single_string_value(NULL);
 		latest_server.set_host(value);
+		latest_server.host_is_set = true;
 	}
 }
 
@@ -210,11 +255,13 @@ void	ConfigParser::storelocationDirs()
 	{
 		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_auto_indx_value);
 		latest_location.set_auto_index(value);
+		latest_location.auto_ind_is_set = true;
 	}
 	else if (token.token == CGI_EXCT_DIR)
 	{
 		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_cgi_ext_value);
 		latest_location.set_cgi_extension(value);
+		latest_location.cgi_ext_is_set = true;
 	}
 	else if (token.token == ERR_PAGE_DIR)
 	{
@@ -225,26 +272,31 @@ void	ConfigParser::storelocationDirs()
 	{
 		std::string	value = extractor.extract_single_string_value(NULL);
 		latest_location.set_root_directory(value);
+		latest_location.root_is_set = true;
 	}
 	else if (token.token == UPLOAD_DIR)
 	{
 		std::string	value = extractor.extract_single_string_value(NULL);
 		latest_location.set_upload_dir(value);
+		latest_location.upl_dir_is_set = true;
 	}
 	else if (token.token == INDEX_DIR)
 	{
 		std::string	value = extractor.extract_single_string_value(NULL);
 		latest_location.set_index(value);
+		latest_location.index_is_set = true;
 	}
 	else if (token.token == ALLOWED_METHODS_DIR)
 	{
 		std::vector<std::string>	value = extractor.extract_multi_string_value(&ConfigValueExtractor::validate_method);
 		latest_location.set_allowed_methods(value);
+		latest_location.methods_is_set = true;
 	}
 	else if (token.token == REDIRECTION_DIR)
 	{
 		t_redirection_info	value = extractor.extract_redirection_info();
 		latest_location.set_redirection(value);
+		latest_location.redirect_is_set = true;
 	}
 }
 

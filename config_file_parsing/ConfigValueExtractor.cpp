@@ -1,6 +1,6 @@
 
 
-#include "ConfigValueExtractor.hpp"
+#include "HttpConfigParser.hpp"
 
 ConfigValueExtractor::ConfigValueExtractor(std::queue<token_info> & tokens) : tokens_queue(tokens)
 {
@@ -18,7 +18,7 @@ std::string	ConfigValueExtractor::extract_single_string_value(void (ConfigValueE
     tokens_queue.pop();
     token = tokens_queue.front();
 
-	if (token.is_sep)
+	if (!tokens_queue.empty() && token.is_sep)
 		ConfigException::throwParsingError(UNEXPECTED, token);
 	else
 		value = token.token;
@@ -46,7 +46,7 @@ std::vector<std::string>	ConfigValueExtractor::extract_multi_string_value(void (
     tokens_queue.pop();
     token = tokens_queue.front();
 
-	if (token.is_sep)
+	if (!tokens_queue.empty() && token.is_sep)
 		ConfigException::throwParsingError(UNEXPECTED, token);
 
 	while (!tokens_queue.empty() && !token.is_sep)
@@ -76,7 +76,7 @@ std::vector<unsigned short>	ConfigValueExtractor::extract_port_nums()
     tokens_queue.pop();
     token = tokens_queue.front();
 
-	if (token.is_sep)
+	if (!tokens_queue.empty() && token.is_sep)
 		ConfigException::throwParsingError(UNEXPECTED, token);
 
 	while (!tokens_queue.empty() && !token.is_sep)
@@ -104,9 +104,9 @@ size_t    ConfigValueExtractor::extract_max_body_size()
     tokens_queue.pop();
     token = tokens_queue.front();
 
-    if (token.is_sep)
+    if (!tokens_queue.empty() && token.is_sep)
 		ConfigException::throwParsingError(UNEXPECTED, token);
-    
+
 	validate_max_body_size(token);
 
 	size = std::stoul(token.token);
@@ -117,7 +117,6 @@ size_t    ConfigValueExtractor::extract_max_body_size()
     validate_directive_ending(token, directive);
 
 	tokens_queue.pop();
-
     return size;
 }
 
@@ -132,7 +131,7 @@ t_error_page	ConfigValueExtractor::extract_error_page_info()
     tokens_queue.pop();
     token = tokens_queue.front();
 
-	if (token.is_sep)
+	if (!tokens_queue.empty() && token.is_sep)
 		ConfigException::throwParsingError(UNEXPECTED, token);
 	
 	validate_http_code_value(token);
@@ -142,9 +141,9 @@ t_error_page	ConfigValueExtractor::extract_error_page_info()
 	tokens_queue.pop();
     token = tokens_queue.front();
 
-	if (token.is_sep && token.token == ";")
+	if (!tokens_queue.empty() && token.is_sep && token.token == ";")
 		ConfigException::throwParsingError(WRONG_ARGS_NUM, directive);
-	if (token.is_sep)
+	if (!tokens_queue.empty() && token.is_sep)
 		ConfigException::throwParsingError(UNEXPECTED, token);
 
 	info.path = token.token;
@@ -153,6 +152,8 @@ t_error_page	ConfigValueExtractor::extract_error_page_info()
     token = tokens_queue.front();
 
     validate_directive_ending(token, directive);
+
+	tokens_queue.pop();
 	return info;
 }
 
@@ -164,7 +165,7 @@ std::string	ConfigValueExtractor::extract_location()
 	tokens_queue.pop();
 	token = tokens_queue.front();
 
-	if (token.is_sep)
+	if (!tokens_queue.empty() && token.is_sep)
 		ConfigException::throwParsingError(UNEXPECTED, token);
 	
 	tokens_queue.pop();
@@ -182,7 +183,7 @@ t_redirection_info			ConfigValueExtractor::extract_redirection_info()
 	tokens_queue.pop();
 	token = tokens_queue.front();
 
-	if (token.is_sep)
+	if (!tokens_queue.empty() && token.is_sep)
 		ConfigException::throwParsingError(UNEXPECTED, token);
 
 	validate_redirection_code(token);
@@ -192,9 +193,9 @@ t_redirection_info			ConfigValueExtractor::extract_redirection_info()
 	tokens_queue.pop();
     token = tokens_queue.front();
 
-	if (token.is_sep && token.token != ";")
+	if (!tokens_queue.empty() && token.is_sep && token.token != ";")
 		ConfigException::throwParsingError(UNTERMINATED, directive);
-	else if(!token.is_sep)
+	else if(!tokens_queue.empty() && !token.is_sep)
 	{
 		info.target = token.token;
 		tokens_queue.pop();
@@ -202,12 +203,14 @@ t_redirection_info			ConfigValueExtractor::extract_redirection_info()
 
 	token = tokens_queue.front();
 	validate_directive_ending(token, directive);
+
+	tokens_queue.pop();
 	return info;
 }
 
 void	ConfigValueExtractor::validate_directive_ending(const token_info & token, const token_info & directive)
 {
-	if (token.is_sep && token.token == ";")
+	if (!tokens_queue.empty() && token.is_sep && token.token == ";")
 		return ;
 
 	if (tokens_queue.empty() || token.is_sep)
@@ -252,10 +255,10 @@ void	ConfigValueExtractor::validate_cgi_ext_value(const token_info & token)
 
 void	ConfigValueExtractor::validate_http_code_value(const token_info & token)
 {
-	if ((!is_all_digits(token.token)
-		|| token.token.length() != 3
-		|| token.token < "300"
-		|| token.token > "599"))
+	if (!is_all_digits(token.token)
+		|| (token.token.length() != 3)
+		|| (token.token < "300")
+		|| (token.token > "599"))
 	{
 		ConfigException::throwWrongValueError(ERR_PAGE_DIR, token);
 	}
@@ -272,10 +275,10 @@ void	ConfigValueExtractor::validate_redirection_code(const token_info & token)
 
 void	ConfigValueExtractor::validate_method(const token_info & token)
 {
-	if (token.token != "GET"
-		&& token.token != "POST"
-		&& token.token != "DELETE"
-		&& token.token != "HEAD")
+	if ((token.token != "GET")
+		&& (token.token != "POST")
+		&& (token.token != "DELETE")
+		&& (token.token != "HEAD"))
 	{
 		ConfigException::throwWrongValueError(ALLOWED_METHODS_DIR, token);
 	}

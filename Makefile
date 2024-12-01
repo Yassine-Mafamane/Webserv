@@ -5,16 +5,15 @@ SERVER_SRCS			=	server_setup/server.cpp \
 
 UTILS_SRCS			=	Utils/helper_functions.cpp
 
-CONFIG_PARSE_SRCS	=	config_file_parsing/config_exception_throw.cpp \
-						config_file_parsing/config_storing.cpp \
-						config_file_parsing/config_values_extracter.cpp \
-						config_file_parsing/config_parser.cpp \
-						config_file_parsing/token_name_checker.cpp \
-						config_file_parsing/ConfigTokenizer.cpp
+CONFIG_PARSE_SRCS	=	config_file_parsing/token_name_checker.cpp \
+						config_file_parsing/ConfigTokenizer.cpp \
+						config_file_parsing/ConfigException.cpp \
+						config_file_parsing/ConfigParser.cpp \
+						config_file_parsing/ConfigValueExtractor.cpp
 
 CONTEXTS_SRCS		=	Contexts/HttpContext.cpp \
 						Contexts/LocationContext.cpp \
-						Contexts/ServerContext.cpp \
+						Contexts/ServerContext.cpp
 
 MAIN_SRCS			=	main.cpp
 
@@ -41,7 +40,7 @@ REQUEST_OBJECTS = $(REQUEST_SRCS:.cpp=.o)
 
 CPP = c++
 
-FLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address
+FLAGS =  #-fsanitize=address #-Wall -Wextra -Werror -std=c++98
 
 NAME = webserv
 

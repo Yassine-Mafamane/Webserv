@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 16:08:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/12 02:55:27 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/30 22:31:59 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include "../Request/request_parse.hpp"
 #include "../Contexts/HttpContext.hpp"
 #include "../Utils/utils.hpp"
-#include "../macros.hpp"
 
 /// include only needed hraders ! 
 
@@ -33,8 +32,8 @@
 #include <unistd.h>
 
 
-#define TMOUT_SEC 1 
-#define TMOUT_NSEC 2000 
+#define TMOUT_SEC 1
+#define TMOUT_NSEC 2000
 #define READ_BUFFER_SIZE 11024
 
 struct Socket

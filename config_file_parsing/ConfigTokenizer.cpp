@@ -1,5 +1,6 @@
 
-#include "ConfigTokenizer.hpp"
+#include "HttpConfigParser.hpp"
+
 
 ConfigTokenizer::ConfigTokenizer()
 {
@@ -76,7 +77,10 @@ void	ConfigTokenizer::extract_quoted_token()
 			{
 				token += '\n';
 				if (!std::getline(file, line))
-					throw_config_parse_exception("EOF", "", file_name, line_num);
+				{
+					token_info	t = {"", line_num, false};
+					ConfigException::throwParsingError(END_OF_FILE, t);
+				}
 				streamed_line.clear();
 				streamed_line.str(line);
 				line_num++;
@@ -86,7 +90,7 @@ void	ConfigTokenizer::extract_quoted_token()
 			break ;
 	}
 
-	// Reseting the pari_quote_found flag.
+	// Reseting the pair_quote_found flag.
 	pair_quote_found = false;
 }
 
@@ -152,7 +156,7 @@ std::string	ConfigTokenizer::capture_chars_after_quote()
 	// append untill the next space | quote
 	while ((streamed_line.tellg() != -1) && ((size_t) streamed_line.tellg() != streamed_line.str().length()))
 	{
-		if (is_space(streamed_line.peek()))
+		if (std::isspace(streamed_line.peek()))
 		{
 			break ;
 		}
@@ -211,10 +215,13 @@ std::string	ConfigTokenizer::get_next_chunk()
 token_info	ConfigTokenizer::normalize_token(std::string & _token)
 {
 	token_info	info;
+	bool		is_possible_sep = true;
 	bool		escaped = false;
 	bool		quoted = false;
 	bool		removed_one = false;
 	char		_quote;
+
+    info.line_num = line_num;
 
 	for (size_t i = 0; i < _token.length(); i++)
 	{
@@ -240,6 +247,7 @@ token_info	ConfigTokenizer::normalize_token(std::string & _token)
 
 		if (_token[i] == '\\' && !escaped)
 		{
+			is_possible_sep = false;
 			_token.erase(i, 1);
 			removed_one = true;
 			escaped = true;
@@ -249,9 +257,8 @@ token_info	ConfigTokenizer::normalize_token(std::string & _token)
 	}
 
 	info.token = _token;
-    info.line_num = line_num;
 
-	if (_token == ";" || _token == "{" || _token == "}")
+	if (is_possible_sep && (_token == ";" || _token == "{" || _token == "}"))
 		info.is_sep = true;
 	else
 		info.is_sep = false;

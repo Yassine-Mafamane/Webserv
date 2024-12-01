@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:30 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/29 04:38:18 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/30 00:44:06 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,11 +71,11 @@ class ServerContext {
         const std::string&                 		get_host( void ) const;
         const bool&                        		get_auto_index( void ) const;  
 
-    private :
+    // private :
 
-        std::vector<t_error_page>       error_pages; // better make a struct that encaplsulates the error page info.
+        std::vector<t_error_page>       error_pages;
 
-        std::vector<LocationContext>    locations; // TODO : Is making a separated vector for exact locations better that mixing all locations in one single vector. 
+        std::vector<LocationContext>    locations;
 
         std::vector<std::string>        server_names;
 

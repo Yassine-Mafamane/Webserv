@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:25 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/29 09:05:44 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/30 02:38:18 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ class LocationContext {
 
     /* Getters */
 
-    private :
+    // private :
 
         std::vector<t_error_page>                               error_pages;
 

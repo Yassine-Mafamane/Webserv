@@ -1,5 +1,5 @@
 
-#include "ConfigException.hpp"
+#include "HttpConfigParser.hpp"
 
 std::string ConfigException::file_name = "";
 
@@ -44,6 +44,9 @@ void	ConfigException::throwParsingError(const ConfigParseError & e, const token_
             error_info << "webserv : unexpected end of file, expecting \"}\" in " + file_name + ":";
             error_info <<  token.line_num;
             break ;
+        case END_OF_FILE :
+            error_info << "webserv : unexpected end of file, expecting \";\" or \"}\" in " + file_name + ":";
+            error_info <<  token.line_num;
     }
 
 	throw std::invalid_argument(error_info.str()); // TODO : Better create a specific exception type

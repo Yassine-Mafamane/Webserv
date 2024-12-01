@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 13:01:34 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/29 03:34:02 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/30 05:29:17 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,14 +50,11 @@ void    HttpContext::set_auto_index(const std::string & on_off)
         this->auto_index = true;
     else
         this->auto_index = false;
-
-	this->auto_ind_is_set = true;
 }
 
 void    HttpContext::set_cgi_extension(const std::string& extension)
 {
     this->cgi_extension = extension;
-    this->cgi_ext_is_set = true;
 }
 
 void   HttpContext::set_new_server( void )
@@ -71,7 +68,11 @@ void   HttpContext::set_new_server( void )
         new_server.set_error_page(*it);
 
     new_server.set_cgi_extension(this->cgi_extension);
-    new_server.set_auto_index(this->auto_index);
+
+    if (this->auto_index)
+        new_server.set_auto_index("on");
+    else
+        new_server.set_auto_index("off");
     
     /* Pushing the newly created server to the servers vector */
     this->servers.push_back(new_server);
@@ -80,7 +81,6 @@ void   HttpContext::set_new_server( void )
 void    HttpContext::set_max_body_size( size_t limit )
 {
     this->max_body_size = limit;
-	this->max_body_is_set = true;
 }
 
 
