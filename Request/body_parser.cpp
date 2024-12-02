@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   body_parser.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 16:59:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/20 08:50:21 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/01 19:36:22 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,6 +177,7 @@ static void validate_header_value(Request & request, std::string & field_value, 
 				file_name = validate_file_name(request, param.substr(9));
 			else
 			{
+				std::cout << "{" << param << "}"  << std::endl;
 				request.markAsBad(932);
 			}
 		}
@@ -257,15 +258,13 @@ static bool	final_boundary_reached(const std::string & boundary, std::string & c
 {
 	std::string close_boundary = boundary;	
 
-	close_boundary.insert(0, "--");
+	close_boundary.insert(0, "--"); 
 	close_boundary.insert(0, CRLF);
 	close_boundary.append("--");
 	close_boundary.append(CRLF);
 
 	return (content.find(close_boundary) == 0);
 }
-#include <fstream>
-	std::ofstream image("image.cpp", std::ios::out |std::ios::trunc | std::ios::binary);
 
 static void	extract_part_content(Request & request, t_part & part, std::string & content)
 {
@@ -282,9 +281,14 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 
 		if (!part.file_name.empty())
 		{
-			// part.file_content.append(valid_data); // this will be changed by writing directly at the file.
-			image << valid_data;
-        // image.flush(); 
+			if (part.file_content == NULL )
+			{
+				// request.get_ClientSocket()->response->getUploadDir() +
+				// std::cout << "part.file_name " << part.file_name << std::endl;
+				part.file_content = new std::ofstream(part.file_name, std::ios::out |std::ios::trunc | std::ios::binary);
+			}
+			*(part.file_content) << valid_data ; // this will be changed by writing directly at the file.
+			// std::cout << "valid_data " << valid_data << std::endl;
 		}
 
 		valid_data.clear();
@@ -296,8 +300,6 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 			request.markLastPartAsReached();
 			request.markBodyParsed(true); // TODO : theire might be some data after the last boundary, and might have to be rood from the socket!
 			content.clear();
-	
-
 			return ;
 		}
 		else if (is_valid_condidate_line(request.get_boundary(), content))
@@ -310,19 +312,13 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 		{
 			part.unparsed_bytes = content;
 			content.clear();
-	
-
 			return ;
 		}
 		else
 		{
-			// part.file_content.append(CRLF, 2);
-			// image.write(CRLF, 2);
-			image << CRLF;
-			// image.flush();
+			*(part.file_content) << CRLF;
 			content.erase(0, 2);
 		}
-
 		crlf_pos = content.find(CRLF);
 	}
 	
@@ -331,19 +327,16 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 			return request.markAsBad(66);
 
 	if (!part.file_name.empty())
-	{
-		// part.file_content.append(content);
-			image << content;
-
-	}
+		*(part.file_content) << content;
 	content.clear();
 }
 
 static void	extract_part(Request & request, std::string & content)
 {
+	// request.get_ClientSocket()->response->getUploadDir() ;
 	t_part &			latest_part = request.get_latest_part(); // TODO : i gotta drop the onse that are not files!
 	std::string			dashed_boundary_crlf;
-	
+
 	dashed_boundary_crlf = request.get_boundary();
 	dashed_boundary_crlf.insert(0, "--");
 	dashed_boundary_crlf.append("\r\n");
@@ -384,7 +377,13 @@ static void	extract_part(Request & request, std::string & content)
 
 	if (latest_part.is_complete && latest_part.file_name.empty())
 	{
+		std::cout << "last_part droped" << std::endl;	
 		request.drop_last_part();
+	}
+	if (latest_part.is_complete && !latest_part.file_name.empty())
+	{
+		if (latest_part.file_content)
+			latest_part.file_content->close();
 	}
 }
 
@@ -411,15 +410,13 @@ static void	process_chunck(Request & request, std::string & chunk_content)
 	}
 	else
 		chunk_content.clear();
-	
+
 }
 
 size_t	hex_to_size_t(Request & request, const std::string & chunk_size)
 {
 	std::string valid_hex_chars = "0123456789ABCDEF";
     size_t      size = 0;
-
-	std::cerr << "--------->" << chunk_size << std::endl;
 
     if (chunk_size[0] == '0' && chunk_size.length() != 1)
     {
@@ -468,11 +465,8 @@ static size_t	extract_chunk_length(Request & request, std::string & msg)
 			return 0;
 		}
 	}
-	std::string length = msg.substr(0, crlf_pos);
-	for (size_t i= 0; i < length.length(); i++)
-		length[i] = std::toupper(length[i]);
 
-	chunk_length = hex_to_size_t(request, length);
+	chunk_length = hex_to_size_t(request, msg.substr(0, crlf_pos));
 
 	request.set_total_chunks_length(chunk_length);
 
@@ -512,6 +506,11 @@ std::string	find_chunk_content(Request & request, std::string & msg)
 	return chunk_content;
 }
 
+static void write_to_cgi_input(Request & request, std::string & content )
+{
+	write(request.get_ClientSocket()->response->get_pair_fds()[0],  content.c_str(), content.length());
+}
+
 void    parse_body(Request & request, std::string & msg)
 {
 	std::string	chunk_content;
@@ -519,13 +518,17 @@ void    parse_body(Request & request, std::string & msg)
 	chunk_content = find_chunk_content(request, msg);
 	while (!chunk_content.empty() && !request.hasParsedBody())
 	{
-		process_chunck(request, chunk_content);
+		if ( request.get_ClientSocket()->response->is_cgi() )
+		{
+			write_to_cgi_input( request, chunk_content );
+			// close(request.get_ClientSocket()->response->get_pair_fds()[0]);
+			request.markBodyParsed(true);
+		}
+		else
+			process_chunck(request, chunk_content);
 		chunk_content.clear();
 		chunk_content = find_chunk_content(request, msg);
 	}
 	if (request.hasParsedBody())
-	{
-		image.close();
 		request.markAsReady(true);
-	}
 }

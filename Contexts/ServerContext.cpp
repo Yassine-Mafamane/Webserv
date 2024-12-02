@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/12 16:37:22 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/30 05:32:28 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/10/30 22:38:21 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,15 +32,16 @@ ServerContext::~ServerContext()
     
 }
 
-void    ServerContext::set_error_page(const t_error_page& error_info)
+void    ServerContext::set_error_page(const std::pair <unsigned short, std::string>& error_info)
 {
-    std::vector<t_error_page>::iterator it;
+    std::vector<std::pair <unsigned short, std::string> >::iterator it;
 
     for (it = this->error_pages.begin(); it != this->error_pages.end(); it++)
     {
-        if ((*it).err_code == error_info.err_code)
+        if ((*it).first == error_info.first)
         {
-            (*it).path = error_info.path;
+            (*it).second = error_info.second;
+
             return ;
         }
     }
@@ -48,11 +49,11 @@ void    ServerContext::set_error_page(const t_error_page& error_info)
     this->error_pages.push_back(error_info);
 }
 
-void   ServerContext::set_new_location( const std::string & location )
+void   ServerContext::set_new_location( void )
 {
-    LocationContext   new_location(location);
+    LocationContext   new_location;
 
-    std::vector<t_error_page>::iterator it;
+    std::vector<std::pair <unsigned short, std::string> >::iterator it;
 
     /* Making the new location inherit the serverContext directives. */
     for (it = this->error_pages.begin(); it < this->error_pages.end(); it++)
@@ -63,11 +64,7 @@ void   ServerContext::set_new_location( const std::string & location )
     new_location.set_cgi_extension(this->cgi_extension);
     new_location.set_upload_dir(this->upload_dir);
     new_location.set_index(this->index);
-
-    if (this->auto_index)
-        new_location.set_auto_index("on");
-    else
-        new_location.set_auto_index("off");
+    new_location.set_auto_index(this->auto_index);
 
     this->locations.push_back(new_location);
 }
@@ -102,9 +99,9 @@ void    ServerContext::set_server_names( std::vector<std::string> names )
     this->server_names.assign(names.begin(), names.end());
 }
 
-void    ServerContext::set_auto_index(const std::string & on_off)
+void    ServerContext::set_auto_index(bool on_off)
 {
-    if (on_off == "on")
+    if (on_off)
         this->auto_index = true;
     else
         this->auto_index = false;
@@ -129,7 +126,7 @@ LocationContext&  ServerContext::get_latest_location( void )
 
 /* Getters */
 
-const std::vector<t_error_page>& ServerContext::get_error_pages( void ) const
+const std::vector<std::pair <unsigned short, std::string> >& ServerContext::get_error_pages( void ) const
 {
     return this->error_pages;
 }

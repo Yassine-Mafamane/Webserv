@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   KqueueWrapper.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:33:49 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/05 11:34:36 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/01 17:13:45 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 int create_kqueue( void )
-{
+{ 
     int fd;
     if ((fd = kqueue()) == -1)
         throw std::runtime_error(std::string("Webserv : kqueue failed, reason : ") + strerror(errno)); // TODO : close all sockets on error
@@ -28,7 +28,7 @@ void    register_socket_in_kqueue(int kqueue_fd, Socket * sock_data, short filte
     EV_SET(&ev, sock_data->get_sock_fd(), filter, EV_ADD | EV_ENABLE, 0, 0, (void *) sock_data);
 
     if (kevent(kqueue_fd, &ev, 1, NULL, 0, NULL) == -1)
-        throw std::runtime_error(std::string("Webserv : kevent(4) failed, reason : ") + strerror(errno));
+        throw std::runtime_error(std::string("Webserv : kevent(4) failed,  reason : ") + strerror(errno));
 }
 
 void    register_listeners_in_kqueue(int kqueue_fd, std::vector<struct ListenerSocket> & activeListners)
@@ -36,7 +36,7 @@ void    register_listeners_in_kqueue(int kqueue_fd, std::vector<struct ListenerS
     std::vector<struct ListenerSocket>::iterator it = activeListners.begin();
     std::vector<struct ListenerSocket>::iterator end = activeListners.end();
 
-    for ( ; it != end; it++)
+    for ( ; it != end; it++) 
         register_socket_in_kqueue(kqueue_fd, &it->get_instance(), EVFILT_READ);
 }
 

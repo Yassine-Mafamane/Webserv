@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 19:05:24 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/20 01:39:18 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/18 05:01:08 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,9 +241,7 @@ static void    parse_header(Request & request, std::string & header)
 
     colon_pos = header.find(':');
     if (colon_pos == std::string::npos)
-    {
         request.markAsBad(6);
-    }
 
     field_name = header.substr(0, colon_pos);
     if (field_name.empty() || contain_unallowed_char(field_name))

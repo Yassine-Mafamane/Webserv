@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/28 15:07:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/01 04:33:16 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/11/25 08:58:02 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,19 +47,16 @@ struct addrinfo *my_get_addrinfo(const char * host)
     return res;
 }
 
-
 void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct ListenerSocket>& active_sockets, const ServerContext& server, unsigned short port)
 {
     int                 fd;
     const char          *cause = NULL;
     unsigned int        n_sock = 0;
+    struct sockaddr_in * ip_access;
     int                 opt = 1; // TODO
 
     for (struct addrinfo *entry = list; entry ; entry = entry->ai_next)
     {
-        
-        struct sockaddr_in *ip_access;
-
         if (already_binded(active_sockets, server, ((struct sockaddr_in *) entry)->sin_addr, port))
         {
             n_sock++;
@@ -72,9 +69,10 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Lis
             cause = "socket";
             continue ;
         }
-        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt));
-        // memset(ip_access, 0, sizeof(struct sockaddr_in));
-                    // std::cout << "Port : " << std::endl;
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt));
+
+        ft_memset(ip_access, 0, sizeof(struct sockaddr_in));
+
         ip_access = (struct sockaddr_in *) entry->ai_addr;
         ip_access->sin_family = entry->ai_family;;
         ip_access->sin_port = htons(port);
@@ -101,9 +99,8 @@ void    initialize_sockets_on_port(struct addrinfo *list, std::vector<struct Lis
         }
         n_sock++;
 
-        if (listen(fd, 128) == -1) // This tells the TCP/IP stack to start accept incoming TCP connections on the port the socket is binded to. 128 because in The mac im working on 128 is the maximum number of pending connections
+        if (listen(fd, 10000) == -1) // This tells the TCP/IP stack to start accept incoming TCP connections on the port the socket is binded to. 128 because in The mac im working on 128 is the maximum number of pending connections
             throw std::runtime_error("Webserv : listen() failed");
-        
     }   
 
     if (n_sock == 0)
@@ -118,7 +115,7 @@ void    setup_servers(const HttpContext& http_config, std::vector<struct Listene
     std::vector<ServerContext>::const_iterator serv_it = http_config.get_servers().begin();
     std::vector<ServerContext>::const_iterator end = http_config.get_servers().end();    
 
-    for ( ; serv_it != end; serv_it++)
+    for ( ; serv_it < end; serv_it++)
     {
         try
         {
@@ -134,11 +131,10 @@ void    setup_servers(const HttpContext& http_config, std::vector<struct Listene
             std::vector<unsigned short>::const_iterator ports_it = serv_it->get_ports().begin();
             std::vector<unsigned short>::const_iterator p_end = serv_it->get_ports().end();
             
-            for ( ; ports_it != p_end; ports_it++ )
+            for ( ; ports_it < p_end; ports_it++ )
             {
                 try
                 {
-                    std::cout << "Port : " << *ports_it << std::endl;
                     initialize_sockets_on_port(res, activeListners, *serv_it, *ports_it);
                 }
                 catch(const char* err)

@@ -14,7 +14,7 @@
                     | 'autoindex'
                     | 'cgi_extention'
                     | 'error_page'
-                    | 'upload_directory'
+                    | 'upload_dir'
                     | 'index'
                     | 'listen'
                     | 'server_names'
