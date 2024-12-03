@@ -12,7 +12,7 @@
 typedef enum	e_ident_type
 {
 	CHILD_ID,
-	SERVER_SOCK,
+	LISTENER_SOCK,
 	CLIENT_SOCK
 }	t_ident_type;
 

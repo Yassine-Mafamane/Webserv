@@ -3,7 +3,24 @@
 
 #include "Socket.hpp"
 
+/* Socket methods definition */
+
+Socket::~Socket()
+{
+    close(this->_ident);
+}
+
 /* ListenerSocket methods definition */
+
+ListenerSocket::ListenerSocket()
+{
+    this->set_type(LISTENER_SOCK);
+}
+
+ListenerSocket::~ListenerSocket()
+{
+
+}
 
 void    ListenerSocket::set_ident( const uintptr_t & id )
 {
@@ -69,7 +86,7 @@ ListenerSocket& ListenerSocket::get_instance( void )
 
 ClientSocket::ClientSocket() : _request(NULL)
 {
-
+    this->set_type(CLIENT_SOCK);
 }
 
 ClientSocket::~ClientSocket()
@@ -152,4 +169,6 @@ void    ClientSocket::delete_request( void )
 {
     if (this->_request)
         delete this->_request;
+
+    this->_request = NULL;
 }

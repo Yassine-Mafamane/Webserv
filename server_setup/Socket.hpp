@@ -4,12 +4,16 @@
 #define SOCKET_HPP
 
 #include "KqueueIdent.hpp"
+#include <unistd.h>
 #include "../Request/request_parse.hpp"
 
+// TODO : add comments descripting ever class.
 
 class Socket : public KqueueIdent {
 
     public :
+
+        virtual ~Socket();
 
         virtual void    									set_host( const struct in_addr & host ) = 0;
         virtual void    									set_port( const unsigned short & port ) = 0;
@@ -33,6 +37,12 @@ class Socket : public KqueueIdent {
 class ListenerSocket : public Socket {
 
     public :
+
+        /* Constructors */
+		ListenerSocket();
+
+		/* Destructor */
+		~ListenerSocket();
 
 		/* Setter methods inherited from the KqueueIdent class */
 		void										set_ident( const uintptr_t & id );

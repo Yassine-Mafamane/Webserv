@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 21:38:05 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/08 20:24:10 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/03 10:27:24 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,26 +48,3 @@ void    err_throw( const char * message )
     throw (std::string("Webserv : ") + message).c_str();
 }
 
-void    close_sockets_on_error(std::vector<struct ListenerSocket>& active_socks)
-{
-    std::vector<struct ListenerSocket>::iterator it = active_socks.begin();
-    std::vector<struct ListenerSocket>::iterator end = active_socks.end();
-
-    for ( ; it != end; it++ )
-    {
-        close(it->get_sock_fd());   
-    }
-}
-
-void    close_client_sockets_on_error(std::vector<struct ClientSocket *>& clients_socks)
-{
-    std::vector<struct ClientSocket *>::iterator it = clients_socks.begin();
-    std::vector<struct ClientSocket *>::iterator end = clients_socks.end();
-
-    for ( ; it != end; it++ )
-    {
-        close((*it)->get_sock_fd());
-        delete (*it)->request;
-        delete *it;   
-    }
-}
