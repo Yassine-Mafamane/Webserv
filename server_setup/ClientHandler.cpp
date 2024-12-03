@@ -6,7 +6,7 @@
 /*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:37:00 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/02 13:20:06 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/02 17:37:42 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,35 +17,38 @@ void delete_client(std::vector<ClientSocket *>& activeClients, int fd)
 {
     std::vector<ClientSocket *>::iterator it = activeClients.begin();
     std::vector<ClientSocket *>::iterator end = activeClients.end();
-    
+
     for ( ; it != end; it++)
     {
         if ((*it)->get_sock_fd() == fd) // TODO : why dont i store clients in a map instead of a vector like that the key will be the client fd so i dont have to loop over all clients to delete on of them
         {
-            // if ( (*it)->response && (*it)->response->get_process_id() != -1 && (*it)->response->get_process_id() != 0 )
-            // {
-            //     kill((*it)->response->get_process_id(), SIGKILL);
-            // }
-            delete (*it)->request;
-            delete (*it)->response;
-            if ((*it)->cgiinfo)
+            if ( (*it)->response && (*it)->response->get_process_id() != -1 && (*it)->response->get_process_id() != 0 )
             {
-                (*it)->cgiinfo->request = NULL;
-                (*it)->cgiinfo->response = NULL;
+                kill((*it)->response->get_process_id(), SIGKILL);
             }
-            if ((*it)->cgiprocess )
+            if (((*it)->cgiprocess && (*it)->cgiprocess->response->get_exit_stat() != -1) || !(*it)->cgiprocess)
             {
-                (*it)->cgiprocess->request = NULL;
-                (*it)->cgiprocess->response = NULL;
+                delete (*it)->request;
+                delete (*it)->response;
+                if ((*it)->cgiinfo)
+                {
+                    (*it)->cgiinfo->request = NULL;
+                    (*it)->cgiinfo->response = NULL;
+                }
+                if ((*it)->cgiprocess )
+                {
+                    (*it)->cgiprocess->request = NULL;
+                    (*it)->cgiprocess->response = NULL;
+                }
+                delete (*it)->cgiinfo;
+                delete (*it)->cgiprocess;
+                (*it)->request = NULL;
+                (*it)->response  = NULL;
+                (*it)->cgiinfo  = NULL;
+                (*it)->cgiprocess  = NULL;
+                delete (*it);
+                activeClients.erase(it);
             }
-            delete (*it)->cgiinfo;
-            delete (*it)->cgiprocess;
-            (*it)->request = NULL;
-            (*it)->response  = NULL;
-            (*it)->cgiinfo  = NULL;
-            (*it)->cgiprocess  = NULL;
-            delete (*it);
-            activeClients.erase(it);
             return ;
         }
     }
