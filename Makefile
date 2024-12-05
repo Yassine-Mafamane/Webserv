@@ -1,7 +1,8 @@
-SERVER_SRCS			=	server_setup/server.cpp \
-						server_setup/polling.cpp  \
+SERVER_SRCS			=	server_setup/Server.cpp \
+						server_setup/SocketManager.cpp  \
 						server_setup/ClientHandler.cpp \
-						server_setup/KqueueWrapper.cpp
+						server_setup/KqueueEventQueue.cpp \
+						server_setup/Socket.cpp
 
 UTILS_SRCS			=	Utils/helper_functions.cpp
 

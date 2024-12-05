@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:07:46 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/30 05:08:39 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/04 01:57:15 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,21 +16,6 @@
 #include "server_setup/Server.hpp"
 #include "config_file_parsing/HttpConfigParser.hpp"
 
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <iostream>
-#include <arpa/inet.h>
-#include <map>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/event.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <string>
-#include <queue>
-#include <sstream>
-#include <fstream>
-#include <fcntl.h>
 
         /* ----------------------------------------------------------------------------------------------------------------- */
 

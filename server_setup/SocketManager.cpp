@@ -1,5 +1,10 @@
 #include "SocketManager.hpp"
 
+SocketManager::SocketManager()
+{
+
+}
+
 SocketManager::~SocketManager()
 {
     // Deleting the activeClients objects (This will result in calling the ClientSocket then Socket destructors!)
@@ -57,6 +62,7 @@ void    SocketManager::create_new_listener(int fd, struct addrinfo *entry, const
     new_s.add_server(&server);
 
     activeListners.push_back(new_s);
+    new_s.set_ident(-1);
 
     std::cout	<<  inet_ntoa(((struct sockaddr_in *)(entry->ai_addr))->sin_addr)
                 << ":" << ntohs(((struct sockaddr_in*)entry->ai_addr)->sin_port)
@@ -70,6 +76,7 @@ void    SocketManager::initialize_sockets_on_port(struct addrinfo *list, const S
     unsigned int        n_sock = 0;
     int                 opt = 1; // TODO
     struct sockaddr_in *ip_access; 
+    int i = 0;
 
     for (struct addrinfo *entry = list; entry ; entry = entry->ai_next)
     {
@@ -85,8 +92,8 @@ void    SocketManager::initialize_sockets_on_port(struct addrinfo *list, const S
             continue ;
         }
 
-        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt)); // TODO : protect
-        // memset(ip_access, 0, sizeof(struct sockaddr_in));
+        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt)); // TODO
+        // memset(ip_access, 0, sizeof(struct sockaddr_in)); // TODO
         ip_access = (struct sockaddr_in *) entry->ai_addr;
         ip_access->sin_family = entry->ai_family;;
         ip_access->sin_port = htons(port);
@@ -99,14 +106,21 @@ void    SocketManager::initialize_sockets_on_port(struct addrinfo *list, const S
         }
 
         create_new_listener(fd, entry, server);
-        n_sock++;
 
+        n_sock++;
         if (listen(fd, 128) == -1)
-            throw std::runtime_error("Webserv : listen() failed");
-    }   
+        {
+            perror("Error : ");
+            freeaddrinfo(list);
+            throw std::runtime_error("\nWebserv : listen() failed");
+        }
+    }
 
     if (n_sock == 0)
+    {
+        freeaddrinfo(list);
         throw cause;
+    }
 }
 
 void    SocketManager::create_listeners(const HttpContext& http_config)
@@ -138,4 +152,26 @@ void    SocketManager::create_listeners(const HttpContext& http_config)
 std::vector<struct ListenerSocket>&	SocketManager::get_listeners()
 {
     return this->activeListners;
+}
+
+void    SocketManager::delete_client(int fd)
+{
+    std::vector<ClientSocket *>::iterator it = activeClients.begin();
+    std::vector<ClientSocket *>::iterator end = activeClients.end();
+
+    for ( ; it != end; it++)
+    {
+        if ((*it)->get_ident() == fd) // TODO : store clients in a map instead of a vector like that the key will be the client fd so i dont have to loop over all clients to delete on of them
+        {
+            delete (*it);
+            activeClients.erase(it);
+            return ;
+        }
+    }
+}
+
+
+void    SocketManager::add_client(ClientSocket * new_client)
+{
+    activeClients.push_back(new_client);
 }

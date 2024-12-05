@@ -2,9 +2,8 @@
 #ifndef SOCKET_MANAGER_HPP
 # define SOCKET_MANAGER_HPP
 
-#include "../Contexts/HttpContext.hpp"
+#include "KqueueEventQueue.hpp"
 #include "../Utils/utils.hpp"
-#include "Socket.hpp"
 
 #include <vector>
 #include <sys/socket.h>
@@ -28,21 +27,15 @@ class SocketManager
 		struct addrinfo	*my_get_addrinfo(const char * host);
 		bool			already_binded(const ServerContext& server, struct in_addr host, unsigned short port);
 		void    		create_new_listener(int fd, struct addrinfo *entry, const ServerContext& server);
+		void			delete_client(int fd);
+		void			add_client(ClientSocket * new_client);
 
-
-		// Client Management :
-		
-		void    		accept_client_connection();
-		// Utils
-		void			close_listeners();
-		void			close_client_sockets();
-
-		std::vector<struct ListenerSocket>&	get_listeners();
+		std::vector<ListenerSocket>&	get_listeners();
 
 	private :
 
-		std::vector<struct ListenerSocket>	activeListners;
-		std::vector<struct ClientSocket *>	activeClients;
+		std::vector<ListenerSocket>	activeListners;
+		std::vector<ClientSocket *>	activeClients;
 };
 
 

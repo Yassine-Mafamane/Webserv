@@ -4,6 +4,7 @@
 #define SOCKET_HPP
 
 #include "KqueueIdent.hpp"
+
 #include <unistd.h>
 #include "../Request/request_parse.hpp"
 
@@ -13,6 +14,8 @@ class Socket : public KqueueIdent {
 
     public :
 
+		Socket();
+		// Socket( Socket & other );
         virtual ~Socket();
 
         virtual void    									set_host( const struct in_addr & host ) = 0;
@@ -32,6 +35,8 @@ class Socket : public KqueueIdent {
 
         std::vector<const ServerContext*>   _related_servers;    // List of server contexts that can serve requests received on this socket.
 
+		bool								_ident_is_set;
+
 };
 
 class ListenerSocket : public Socket {
@@ -40,14 +45,15 @@ class ListenerSocket : public Socket {
 
         /* Constructors */
 		ListenerSocket();
+		ListenerSocket( const bool & is_temp );
 
 		/* Destructor */
 		~ListenerSocket();
 
 		/* Setter methods inherited from the KqueueIdent class */
-		void										set_ident( const uintptr_t & id );
+		void										set_ident( const int & id );
 		void										set_type( const t_ident_type & type );
-
+		void										mark_ident_as_set();
 
 		/* Setter methods inherited from the Socket class */
         void    									set_host( const struct in_addr & host );
@@ -57,7 +63,7 @@ class ListenerSocket : public Socket {
 
 
 		// Getter methods inherited from the KqueueIdent class
-		uintptr_t									get_ident( void );
+		int											get_ident( void );
 		t_ident_type								get_type( void );
 
 		/* Getter methods inherited from the Socket class */
@@ -71,6 +77,7 @@ class ListenerSocket : public Socket {
 
 	private :
 
+		bool	is_temp;
 };
 
 class ClientSocket : public Socket {
@@ -84,7 +91,7 @@ class ClientSocket : public Socket {
 		~ClientSocket();
 
 		/* Setter methods inherited from the KqueueIdent class */
-		void										set_ident( const uintptr_t & id );
+		void										set_ident( const int & id );
 		void										set_type( const t_ident_type & type );
 
 
@@ -96,7 +103,7 @@ class ClientSocket : public Socket {
 
 
 		// Getter methods inherited from the KqueueIdent class
-		uintptr_t									get_ident( void );
+		int											get_ident( void );
 		t_ident_type								get_type( void );
 
 

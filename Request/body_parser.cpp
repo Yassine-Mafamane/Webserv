@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 16:59:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/20 08:50:21 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/04 04:50:13 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,7 +265,7 @@ static bool	final_boundary_reached(const std::string & boundary, std::string & c
 	return (content.find(close_boundary) == 0);
 }
 #include <fstream>
-	std::ofstream image("image.cpp", std::ios::out |std::ios::trunc | std::ios::binary);
+	std::stringstream image("image.cpp", std::ios::out |std::ios::trunc | std::ios::binary);
 
 static void	extract_part_content(Request & request, t_part & part, std::string & content)
 {
@@ -525,7 +525,6 @@ void    parse_body(Request & request, std::string & msg)
 	}
 	if (request.hasParsedBody())
 	{
-		image.close();
 		request.markAsReady(true);
 	}
 }

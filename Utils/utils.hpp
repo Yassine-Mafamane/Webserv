@@ -6,14 +6,14 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/01 21:45:38 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/03 13:11:23 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/04 02:20:59 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILS_HPP
 # define UTILS_HPP
 
-#include "../webserv.hpp"
+#include <string>
 
 bool    is_space(char c);
 void    err_throw( const char * message );

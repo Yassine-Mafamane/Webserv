@@ -5,9 +5,17 @@
 
 /* Socket methods definition */
 
+Socket::Socket()
+{
+    this->_ident_is_set = false; // because if we dont, creating a socket without setting it s ident will result in closing a random fd after destructing that object.
+}
+
 Socket::~Socket()
 {
-    close(this->_ident);
+    if(this->_ident_is_set && this->_ident >= 0)
+    {
+        close(this->_ident);
+    }
 }
 
 /* ListenerSocket methods definition */
@@ -15,6 +23,12 @@ Socket::~Socket()
 ListenerSocket::ListenerSocket()
 {
     this->set_type(LISTENER_SOCK);
+    this->is_temp = false;
+}
+
+ListenerSocket::ListenerSocket( const bool & is_temp ) : is_temp(is_temp)
+{
+    
 }
 
 ListenerSocket::~ListenerSocket()
@@ -22,7 +36,12 @@ ListenerSocket::~ListenerSocket()
 
 }
 
-void    ListenerSocket::set_ident( const uintptr_t & id )
+void    ListenerSocket::mark_ident_as_set()
+{
+    this->_ident_is_set = true;
+}
+
+void    ListenerSocket::set_ident( const int & id )
 {
     this->_ident = id;
 }
@@ -52,7 +71,7 @@ void    ListenerSocket::add_server( const ServerContext* server )
     this->_related_servers.push_back(server);
 }
 
-uintptr_t   ListenerSocket::get_ident( void )
+int   ListenerSocket::get_ident( void )
 {
     return this->_ident;
 }
@@ -95,8 +114,9 @@ ClientSocket::~ClientSocket()
         delete this->_request;
 }
 
-void    ClientSocket::set_ident( const uintptr_t & id )
+void    ClientSocket::set_ident( const int & id )
 {
+    this->_ident_is_set = true;
     this->_ident = id;
 }
 
@@ -125,7 +145,7 @@ void    ClientSocket::add_server( const ServerContext* server )
     this->_related_servers.push_back(server);
 }
 
-uintptr_t   ClientSocket::get_ident( void )
+int   ClientSocket::get_ident( void )
 {
     return this->_ident;
 }
