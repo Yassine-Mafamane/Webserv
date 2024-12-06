@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:37:00 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/04 02:52:28 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/06 02:36:26 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,6 @@
 void    determine_parsing_stage(Request & request, std::string & rcvdMsg)
 {
     size_t      crlf_pos = rcvdMsg.find(CRLF);
-
-    return request.markAsReady(true);
 
     if ((!request.hasParsedStartLine() || !request.hasParsedHeaders()) && crlf_pos == std::string::npos)
         return request.storeUnparsedMsg(rcvdMsg); 
@@ -47,7 +45,13 @@ void    determine_parsing_stage(Request & request, std::string & rcvdMsg)
 
     // only read the body if the method is not get or head! or if content length is not 0...
     if (!request.hasParsedBody())
+    {
         parse_body(request, rcvdMsg);
+        if (!rcvdMsg.empty())
+            request.storeUnparsedMsg(rcvdMsg); // no need ?
+    }
+    
+    
 }
 
 void    parse_client_request(Request & request, std::string & rcvdMsg)
@@ -76,7 +80,7 @@ void    parse_client_request(Request & request, std::string & rcvdMsg)
 
 void    handle_client_request(ClientSocket* client_info)
 {
-    std::string rcvdMsg;
+    std::string rcvdMsg = "";
     char        buffer[READ_BUFFER_SIZE];
     size_t      rcvdSize;
 
@@ -85,7 +89,6 @@ void    handle_client_request(ClientSocket* client_info)
 
     buffer[rcvdSize] = '\0';
     rcvdMsg.append(buffer, rcvdSize);
-
     parse_client_request(*(client_info->get_request()), rcvdMsg);    
 }
 

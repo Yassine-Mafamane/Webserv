@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:06:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/20 04:16:43 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/06 02:30:18 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ Request::Request( void )
     size_left = 0;
     total_chunks_length = 0;
     is_ready = false;
+    first_chunk_fixed = false;
 }
 
 Request::~Request()

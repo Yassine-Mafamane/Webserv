@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 16:59:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/04 04:50:13 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/06 02:35:44 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,7 +265,7 @@ static bool	final_boundary_reached(const std::string & boundary, std::string & c
 	return (content.find(close_boundary) == 0);
 }
 #include <fstream>
-	std::stringstream image("image.cpp", std::ios::out |std::ios::trunc | std::ios::binary);
+	std::ofstream image("video.mp4", std::ios::out |std::ios::trunc | std::ios::binary);
 
 static void	extract_part_content(Request & request, t_part & part, std::string & content)
 {
@@ -281,11 +281,7 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 			request.markAsBad(66);
 
 		if (!part.file_name.empty())
-		{
-			// part.file_content.append(valid_data); // this will be changed by writing directly at the file.
 			image << valid_data;
-        // image.flush(); 
-		}
 
 		valid_data.clear();
 		content.erase(0, crlf_pos);
@@ -296,8 +292,6 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 			request.markLastPartAsReached();
 			request.markBodyParsed(true); // TODO : theire might be some data after the last boundary, and might have to be rood from the socket!
 			content.clear();
-	
-
 			return ;
 		}
 		else if (is_valid_condidate_line(request.get_boundary(), content))
@@ -310,19 +304,13 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 		{
 			part.unparsed_bytes = content;
 			content.clear();
-	
-
 			return ;
 		}
 		else
 		{
-			// part.file_content.append(CRLF, 2);
-			// image.write(CRLF, 2);
 			image << CRLF;
-			// image.flush();
 			content.erase(0, 2);
 		}
-
 		crlf_pos = content.find(CRLF);
 	}
 	
@@ -331,11 +319,8 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 			return request.markAsBad(66);
 
 	if (!part.file_name.empty())
-	{
-		// part.file_content.append(content);
-			image << content;
+		image << content;
 
-	}
 	content.clear();
 }
 
@@ -411,15 +396,12 @@ static void	process_chunck(Request & request, std::string & chunk_content)
 	}
 	else
 		chunk_content.clear();
-	
 }
 
 size_t	hex_to_size_t(Request & request, const std::string & chunk_size)
 {
 	std::string valid_hex_chars = "0123456789ABCDEF";
     size_t      size = 0;
-
-	std::cerr << "--------->" << chunk_size << std::endl;
 
     if (chunk_size[0] == '0' && chunk_size.length() != 1)
     {
@@ -457,6 +439,18 @@ static size_t	extract_chunk_length(Request & request, std::string & msg)
 	size_t	crlf_pos;
 
 	crlf_pos = msg.find(CRLF);
+	if (crlf_pos != 0)
+	{
+		if (msg.length() >= 2)
+			request.markAsBad(499);
+		
+		request.storeUnparsedMsg(msg);
+		msg.clear();
+		return 0;	
+	}
+	crlf_pos = msg.find(CRLF, 2);
+	if (crlf_pos == 2)
+		request.markAsBad(888);
 	if (crlf_pos == std::string::npos)
 	{
 		if (msg.length() >= 18)
@@ -468,6 +462,8 @@ static size_t	extract_chunk_length(Request & request, std::string & msg)
 			return 0;
 		}
 	}
+	msg.erase(0, 2); // removing the first CRLF
+	crlf_pos -= 2; // Since 2 chars has been removed!
 	std::string length = msg.substr(0, crlf_pos);
 	for (size_t i= 0; i < length.length(); i++)
 		length[i] = std::toupper(length[i]);
@@ -476,7 +472,7 @@ static size_t	extract_chunk_length(Request & request, std::string & msg)
 
 	request.set_total_chunks_length(chunk_length);
 
-	msg.erase(0, crlf_pos + 2);
+	msg.erase(0, length.length() + 2);
 	if (!chunk_length)
 		request.markBodyParsed(true);
 
@@ -488,6 +484,7 @@ std::string	find_chunk_content(Request & request, std::string & msg)
 	std::string	chunk_content;
 	size_t		chunk_length;
 
+	// In case a previous chunk is not yet fully read
 	chunk_length = request.hasAnUndoneChunk();
 
 	if (!chunk_length && !request.isChunked())
@@ -495,11 +492,12 @@ std::string	find_chunk_content(Request & request, std::string & msg)
 
 	if (!chunk_length && request.isChunked())
 	{
-		if ((msg.length() >= 2) && request.get_total_chunks_length() && (msg.find(CRLF) != 0))
-			request.markAsBad(499);
-
-		if (msg.length() >= 2 && request.get_total_chunks_length())
-			msg.erase(0, 2);
+		// in order to normalize the chunk syntax, since the first chunk is not preceded by CRLF
+		if (!request.first_chunk_fixed)
+		{
+			request.first_chunk_fixed = true;
+			msg.insert(0, CRLF);
+		}
 
 		chunk_length = extract_chunk_length(request, msg);
 		if (!chunk_length)
@@ -523,8 +521,10 @@ void    parse_body(Request & request, std::string & msg)
 		chunk_content.clear();
 		chunk_content = find_chunk_content(request, msg);
 	}
+
 	if (request.hasParsedBody())
 	{
+		image.close();
 		request.markAsReady(true);
 	}
 }

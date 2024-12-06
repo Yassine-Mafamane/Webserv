@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/04 17:07:06 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/19 07:36:30 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/06 02:21:24 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,9 @@ typedef struct  s_part {
 class Request {
 
     public :
+
+        bool                    first_chunk_fixed;
+
 
         /* Constructors */
         Request( void );
