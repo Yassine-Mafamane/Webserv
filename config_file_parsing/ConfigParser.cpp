@@ -11,36 +11,36 @@ ConfigParser::ConfigParser(std::queue<token_info> & tokens) : tokens_queue(token
 
 void	ConfigParser::validate_config()
 {
-    const std::vector<ServerContext> servers = http_config.get_servers();
+	const std::vector<ServerContext> servers = http_config.get_servers();
 
-    if (servers.size() == 0)
-    {
-        throw std::invalid_argument("Configuration Error: Please specify at least one server within the Http context.");
-    }
+	if (servers.size() == 0)
+	{
+		throw std::invalid_argument("Configuration Error: Please specify at least one server within the Http context.");
+	}
 
-    std::vector<ServerContext>::const_iterator it = http_config.get_servers().begin();
-    std::vector<ServerContext>::const_iterator end = http_config.get_servers().end();
+	std::vector<ServerContext>::const_iterator it = http_config.get_servers().begin();
+	std::vector<ServerContext>::const_iterator end = http_config.get_servers().end();
 
-    for (; it < end; it++)
-    {
-        if (it->get_host() == "")
-            throw std::invalid_argument("Configuration Error: Hostname required for server definition but not provided."); 
+	for (; it < end; it++)
+	{
+		if (it->get_host() == "")
+			throw std::invalid_argument("Configuration Error: Hostname required for server definition but not provided."); 
 
-        if (it->get_root_directory() == "")
-            throw std::invalid_argument("Configuration Error: Root directory required for server definition but not provided."); 
+		if (it->get_root_directory() == "")
+			throw std::invalid_argument("Configuration Error: Root directory required for server definition but not provided."); 
 
-        if (it->get_ports().size() == 0)
-            throw std::invalid_argument("Configuration Error: Please specify a port for all servers to listen on."); 
-    }
+		if (it->get_ports().size() == 0)
+			throw std::invalid_argument("Configuration Error: Please specify a port for all servers to listen on."); 
+	}
 
 }
 
 HttpContext	ConfigParser::getConfig(const std::string & file_name)
 {
-    // Tokenizing the config file :
-    std::queue<token_info>  tokens = ConfigTokenizer::tokenize(file_name);
+	// Tokenizing the config file :
+	std::queue<token_info>  tokens = ConfigTokenizer::tokenize(file_name);
 
-    // Setting the file_name attribute for the ConfigException class.
+	// Setting the file_name attribute for the ConfigException class.
 	ConfigException::file_name = file_name;
 
 	validate_tokens_queue(tokens);
@@ -48,7 +48,7 @@ HttpContext	ConfigParser::getConfig(const std::string & file_name)
 	ConfigParser	parser(tokens);
 
 	// Removing the "http" token from the top of the queue to start processing directives.
-    parser.tokens_queue.pop();
+	parser.tokens_queue.pop();
 
 	parser.storeConfig("http");
 
@@ -59,12 +59,12 @@ HttpContext	ConfigParser::getConfig(const std::string & file_name)
 
 void    ConfigParser::validate_tokens_queue(const std::queue<token_info> & tokens_queue)
 {
-    if (tokens_queue.empty())
-        ConfigException::throwParsingError(EMPTY, tokens_queue.front());
+	if (tokens_queue.empty())
+		ConfigException::throwParsingError(EMPTY, tokens_queue.front());
 
 	// Making sure the first token value is "http"
 	if (tokens_queue.front().token != "http")
-    {
+	{
 		if (tokens_queue.front().is_sep)
 			ConfigException::throwParsingError(UNEXPECTED, tokens_queue.front());
 		else if (is_a_valid_dir(tokens_queue.front().token))
@@ -77,7 +77,7 @@ void    ConfigParser::validate_tokens_queue(const std::queue<token_info> & token
 void	ConfigParser::storeConfig(const std::string & context)
 {
 	if (tokens_queue.front().token != "{")
-	    ConfigException::throwParsingError(NO_OPENING, tokens_queue.front());
+		ConfigException::throwParsingError(NO_OPENING, tokens_queue.front());
 
 	tokens_queue.pop();
 
@@ -86,12 +86,12 @@ void	ConfigParser::storeConfig(const std::string & context)
 		if (tokens_queue.front().is_sep && tokens_queue.front().token == "}")
 			break ;
 
-	    if (context == "http")
-	        storeHttpDirs();
-	    else if (context == "server")
-	        storeServDirs();
-	    else if (context == "location")
-	        storelocationDirs();
+		if (context == "http")
+			storeHttpDirs();
+		else if (context == "server")
+			storeServDirs();
+		else if (context == "location")
+			storelocationDirs();
 	}
 
 	validate_context_closure(context);
@@ -100,12 +100,12 @@ void	ConfigParser::storeConfig(const std::string & context)
 void	ConfigParser::validate_context_closure(const std::string & context)
 {
 	if (tokens_queue.empty())
-	    ConfigException::throwParsingError(UNCLOSED_CTX, tokens_queue.front());
+		ConfigException::throwParsingError(UNCLOSED_CTX, tokens_queue.front());
 
 	tokens_queue.pop();
 
 	if (context == "http" && !tokens_queue.empty())
-	    ConfigException::throwParsingError(UNEXPECTED, tokens_queue.front());
+		ConfigException::throwParsingError(UNEXPECTED, tokens_queue.front());
 }
 
 void	ConfigParser::find_bad_token_type(token_info & token)
@@ -144,7 +144,7 @@ void	ConfigParser::storeHttpDirs()
 	{
 		std::string	value = extractor.extract_single_string_value(&ConfigValueExtractor::validate_cgi_ext_value);
 		http_config.set_cgi_extension(value);
-    	http_config.cgi_ext_is_set = true;
+		http_config.cgi_ext_is_set = true;
 
 	}
 	else if (token.token == MAX_BODY_DIR)
@@ -339,7 +339,7 @@ void	ConfigParser::setup_new_server()
 
 void	ConfigParser::setup_new_location()
 {
-    std::string	location = extractor.extract_location();
+	std::string	location = extractor.extract_location();
 
 	http_config.get_latest_server().set_new_location(location);
 }

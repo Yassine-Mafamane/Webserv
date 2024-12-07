@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/28 15:07:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/05 03:01:31 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/07 04:39:39 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,7 @@ void    Server::start()
             {
                 ClientSocket  * client_info = (ClientSocket *) events[i].udata;
                 respond_to_client(client_info);
+                std::cerr << "client responded!" << std::endl;
                 kqueueManager.switch_interest(client_info, EVFILT_WRITE, EVFILT_READ);
             }
 		}

@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 18:06:26 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/05 06:36:24 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/07 01:52:21 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,7 @@ static void    check_method(Request& request, std::string& method)
     for (size_t i = 0; i < method.length(); i++)
     {
         if (method[i] < 'A' || method[i] > 'Z')
-        {
-            std::cout << "'" << method << "'" <<std::endl;
-            std::cerr << "here" << std::endl;
             request.markAsBad(22);
-        }
     }
     request.set_method(method);
 }

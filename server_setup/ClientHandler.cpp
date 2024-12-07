@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:37:00 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/06 02:36:26 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/07 01:46:00 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,6 @@ void    determine_parsing_stage(Request & request, std::string & rcvdMsg)
         if (!rcvdMsg.empty())
             request.storeUnparsedMsg(rcvdMsg); // no need ?
     }
-    
-    
 }
 
 void    parse_client_request(Request & request, std::string & rcvdMsg)

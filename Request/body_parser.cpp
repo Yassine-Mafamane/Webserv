@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 16:59:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/06 02:35:44 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/07 07:20:41 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,7 @@ void trim_content_to_boundary_segment(const std::string & boundary, std::string 
     }
 }
 
+// Removing all the data before the first boundary
 static void	remove_ignored_area(const std::string & boundary, std::string & content)
 {
 	size_t		boundary_pos;
@@ -110,16 +111,15 @@ static void	remove_ignored_area(const std::string & boundary, std::string & cont
 	dashed_boundary_crlf.append(CRLF);
 	boundary_pos = content.find(dashed_boundary_crlf);
 
-	// In this case the boundary is the first thing in the request body, else, the boundary might come after some useless data.
 	if (!boundary_pos)
 		return ;
-	
+
 	dashed_boundary_crlf.insert(0, CRLF);
 	boundary_pos = content.find(dashed_boundary_crlf);
 
 	if (boundary_pos != std::string::npos)
     {
-		content.erase(0, boundary_pos); // TODO : Did not erased crlf
+		content.erase(0, boundary_pos + 2);
     }
 	else
 	{
@@ -157,7 +157,7 @@ static void validate_header_value(Request & request, std::string & field_value, 
 	std::stringstream	strm(field_value);
 	std::string			param;
 	int					i = 0;
-	bool				name_param_found = false; // TODO : use the name param 
+	bool				name_param_found = false;
 
 	while (std::getline(strm, param, ';'))
 	{
@@ -182,6 +182,9 @@ static void validate_header_value(Request & request, std::string & field_value, 
 		}
 		i++;
 	}
+
+	if (!file_name.empty() && !name_param_found)
+		request.markAsBad(933);
 }
 
 static void	check_part_header(Request & request, std::string & header, t_part & part)
@@ -204,7 +207,7 @@ static void	check_part_header(Request & request, std::string & header, t_part & 
     field_value = header;
 
 	if ((field_name == "CONTENT-DISPOSITION") && (field_value.find("filename=") != std::string::npos))
-    	validate_header_value(request , field_value, part.file_name); // ONLY VALIDATE THE HEADER IF IT S THE ONE WE ARE INTERESTED ON.
+    	validate_header_value(request , field_value, part.file_name); // ONLY VALIDATE THE HEADER IF IT S THE ONE WE ARE INTERESTED AT.
 }
 
 static void	extract_part_headers(Request & request, t_part & part, std::string & content)
@@ -280,7 +283,7 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 		if (valid_data.find(request.get_boundary()) != std::string::npos)
 			request.markAsBad(66);
 
-		if (!part.file_name.empty())
+		if (!part.file_name.empty()) // this can be checked from the begining ?
 			image << valid_data;
 
 		valid_data.clear();
@@ -290,7 +293,7 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 		{
 			part.is_complete = true;
 			request.markLastPartAsReached();
-			request.markBodyParsed(true); // TODO : theire might be some data after the last boundary, and might have to be rood from the socket!
+			request.markBodyParsed(true); // TODO : theire might be some data after the last boundary, and might have to be read from the socket!
 			content.clear();
 			return ;
 		}
@@ -315,7 +318,7 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 	}
 	
 	// Breaking the loop means that some data that does not contain CRLF was found.
-	if (content.find(request.get_boundary()) != std::string::npos)
+	if (content.find(request.get_boundary()) != std::string::npos) // TODO : what if at the first time i push a part of the boundary and in the seconde chunk i push an other segment ?  hmmm... but i can t just search for the boundary in the whole stored data 
 			return request.markAsBad(66);
 
 	if (!part.file_name.empty())
@@ -358,9 +361,7 @@ static void	extract_part(Request & request, std::string & content)
 	// when getting here the file name might or might not be set, only post the file if it s set! because that will be the only case where the part is related to a file input.
 	// if it s a file then directly open it to start writing at it!
 	if (latest_part.header_parsed)
-	{
 		extract_part_content(request, latest_part, content);
-	}
 	else
 	{
 		latest_part.unparsed_bytes = content; // in case we only got a part of a the headers not all of them.
@@ -368,15 +369,13 @@ static void	extract_part(Request & request, std::string & content)
 	}
 
 	if (latest_part.is_complete && latest_part.file_name.empty())
-	{
 		request.drop_last_part();
-	}
 }
 
 // Processes a single chunk, doesn t matter if the request is chunked or not, if it s not it just assumes that there is only one signle chunk.
 static void	process_chunck(Request & request, std::string & chunk_content)
 {
-	if (request.isMultipart())
+	if (request.isMultipart()) // TODO : && the request target is not CGI
 	{
 		if (!request.hasReachedFirstPart())
 		{
@@ -393,6 +392,8 @@ static void	process_chunck(Request & request, std::string & chunk_content)
 				extract_part(request, chunk_content);
 			}
 		}
+		else
+			chunk_content.clear(); // TODO : check if this is the right way to ignore the data that comes after the last boundary!
 	}
 	else
 		chunk_content.clear();
@@ -462,8 +463,8 @@ static size_t	extract_chunk_length(Request & request, std::string & msg)
 			return 0;
 		}
 	}
-	msg.erase(0, 2); // removing the first CRLF
-	crlf_pos -= 2; // Since 2 chars has been removed!
+	msg.erase(0, 2);
+	crlf_pos -= 2;
 	std::string length = msg.substr(0, crlf_pos);
 	for (size_t i= 0; i < length.length(); i++)
 		length[i] = std::toupper(length[i]);
@@ -487,26 +488,27 @@ std::string	find_chunk_content(Request & request, std::string & msg)
 	// In case a previous chunk is not yet fully read
 	chunk_length = request.hasAnUndoneChunk();
 
-	if (!chunk_length && !request.isChunked())
-		chunk_length = request.getContentLength();
-
-	if (!chunk_length && request.isChunked())
+	if (!chunk_length) // TODO : make sure that the request is either chunked or the chunk size is given!
 	{
-		// in order to normalize the chunk syntax, since the first chunk is not preceded by CRLF
-		if (!request.first_chunk_fixed)
+		if (!request.isChunked())
+			chunk_length = request.getContentLength();
+		else
 		{
-			request.first_chunk_fixed = true;
-			msg.insert(0, CRLF);
+			// in order to normalize the chunk syntax, since the first chunk is not preceded by CRLF
+			if (!request.first_chunk_fixed)
+			{
+				request.first_chunk_fixed = true;
+				msg.insert(0, CRLF);
+			}
+			if ((chunk_length = extract_chunk_length(request, msg)) == 0)
+				return "";
 		}
-
-		chunk_length = extract_chunk_length(request, msg);
-		if (!chunk_length)
-			return "";
 	}
 
 	chunk_content = msg.substr(0, chunk_length);
-	update_chunk_state(request, chunk_length - chunk_content.length());
 	msg.erase(0, chunk_length);
+	update_chunk_state(request, chunk_length - chunk_content.length());
+
 	return chunk_content;
 }
 
@@ -518,7 +520,7 @@ void    parse_body(Request & request, std::string & msg)
 	while (!chunk_content.empty() && !request.hasParsedBody())
 	{
 		process_chunck(request, chunk_content);
-		chunk_content.clear();
+		chunk_content.clear(); // Not necessary ?
 		chunk_content = find_chunk_content(request, msg);
 	}
 
