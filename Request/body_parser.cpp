@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 16:59:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/07 07:20:41 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/09 05:58:03 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,8 @@ static void	remove_ignored_area(const std::string & boundary, std::string & cont
     }
 	else
 	{
-		content.erase(0, content.length() - dashed_boundary_crlf.length());
+		if (content.length() >= dashed_boundary_crlf.length())
+			content.erase(0, content.length() - dashed_boundary_crlf.length());
 		trim_content_to_boundary_segment(dashed_boundary_crlf, content);
 	}
 }
@@ -207,7 +208,15 @@ static void	check_part_header(Request & request, std::string & header, t_part & 
     field_value = header;
 
 	if ((field_name == "CONTENT-DISPOSITION") && (field_value.find("filename=") != std::string::npos))
-    	validate_header_value(request , field_value, part.file_name); // ONLY VALIDATE THE HEADER IF IT S THE ONE WE ARE INTERESTED AT.
+    	validate_header_value(request , field_value, part.file_name);
+
+	if (!part.file_name.empty())
+	{
+		part.file.open(part.file_name, std::ios::out |std::ios::trunc | std::ios::binary);
+		if (!part.file.is_open())
+			request.markAsBad(500);
+		part.file.close();
+	}
 }
 
 static void	extract_part_headers(Request & request, t_part & part, std::string & content)
@@ -235,120 +244,121 @@ static void	extract_part_headers(Request & request, t_part & part, std::string &
 
 static bool	is_valid_condidate_line(const std::string & boundary, std::string & content)
 {
-	// have to check for the final boundary as well!
-	std::string dashed_boundary_crlf = boundary;
-
-	dashed_boundary_crlf.insert(0, "--");
-	dashed_boundary_crlf.insert(0, CRLF);
-	dashed_boundary_crlf.append(CRLF);
-
-	return (content.find(dashed_boundary_crlf) == 0);
+	return (content.find(boundary) == 0);
 }
 
 static bool	is_possible_condidate_line(const std::string & boundary, std::string & content)
 {
-	std::string dashed_boundary_crlf = boundary;
-
-	dashed_boundary_crlf.insert(0, "--");
-	dashed_boundary_crlf.insert(0, CRLF);
-	dashed_boundary_crlf.append(CRLF);
-
-	return (dashed_boundary_crlf.find(content) == 0);
+	std::string	final_boundary = boundary;
+	
+	final_boundary.insert(boundary.length() - 2, "--");
+	return ((boundary.find(content) == 0) || (final_boundary.find(content) == 0));
 }
 
 static bool	final_boundary_reached(const std::string & boundary, std::string & content)
 {
-	std::string close_boundary = boundary;	
-
-	close_boundary.insert(0, "--");
-	close_boundary.insert(0, CRLF);
-	close_boundary.append("--");
-	close_boundary.append(CRLF);
-
-	return (content.find(close_boundary) == 0);
+	return (content.find(boundary) == 0);
 }
-#include <fstream>
-	std::ofstream image("video.mp4", std::ios::out |std::ios::trunc | std::ios::binary);
 
 static void	extract_part_content(Request & request, t_part & part, std::string & content)
 {
+	part.file.open(part.file_name, std::ios::out |std::ios::app | std::ios::binary);
 	size_t		crlf_pos;
+	size_t		valid_length = 0;
 	std::string	valid_data;
 
 	crlf_pos = content.find(CRLF);
 	while (crlf_pos != std::string::npos)
 	{
-		valid_data.append(content.substr(0, crlf_pos)); // TODO : check without saving in a string
+		valid_data.append(content.substr(0, crlf_pos));
 
-		if (valid_data.find(request.get_boundary()) != std::string::npos)
+		if (valid_data.find(request.get_boundary(), valid_length) != std::string::npos)
 			request.markAsBad(66);
 
-		if (!part.file_name.empty()) // this can be checked from the begining ?
-			image << valid_data;
+		valid_length += valid_data.length();
 
-		valid_data.clear();
 		content.erase(0, crlf_pos);
 
-		if (final_boundary_reached(request.get_boundary(), content))
+		if (final_boundary_reached(request.build_boundary(2), content))
 		{
 			part.is_complete = true;
 			request.markLastPartAsReached();
-			request.markBodyParsed(true); // TODO : theire might be some data after the last boundary, and might have to be read from the socket!
+			request.markBodyParsed(true);
 			content.clear();
+			if (!part.file_name.empty())
+				part.file << valid_data;
+			part.file.flush();
+			part.file.close();
+			// part.file.close();
 			return ;
 		}
-		else if (is_valid_condidate_line(request.get_boundary(), content))
+		else if (is_valid_condidate_line(request.build_boundary(3), content))
 		{
 			content.erase(0, 2);
 			part.is_complete = true;
+
+			if (!part.file_name.empty())
+				part.file << valid_data;
+			if (part.file.fail()) {
+				std::cerr << "Write operation failed for file: " << part.file_name << std::endl;
+			}
+			part.file.flush();
+			part.file.close();
 			return ;
 		}
-		else if (is_possible_condidate_line(request.get_boundary(), content))
+		else if (is_possible_condidate_line(request.build_boundary(3), content))
 		{
 			part.unparsed_bytes = content;
 			content.clear();
+
+			if (!part.file_name.empty())
+				part.file << valid_data;
+			
+			if (part.file.fail()) {
+				std::cerr << "Write operation failed for file: " << part.file_name << std::endl;
+			}
+			part.file.flush();
+			part.file.close();
 			return ;
 		}
 		else
 		{
-			image << CRLF;
+			valid_data.append(CRLF);
+			valid_length += 2;
 			content.erase(0, 2);
 		}
 		crlf_pos = content.find(CRLF);
 	}
-	
-	// Breaking the loop means that some data that does not contain CRLF was found.
-	if (content.find(request.get_boundary()) != std::string::npos) // TODO : what if at the first time i push a part of the boundary and in the seconde chunk i push an other segment ?  hmmm... but i can t just search for the boundary in the whole stored data 
-			return request.markAsBad(66);
+
+	if (content.find(request.get_boundary()) != std::string::npos)
+		request.markAsBad(66);
+
+	valid_data.append(content);
+	content.clear();
 
 	if (!part.file_name.empty())
-		image << content;
-
-	content.clear();
+		part.file << valid_data;
+	part.file.flush();
+	part.file.close();
 }
-
+ 
 static void	extract_part(Request & request, std::string & content)
 {
-	t_part &			latest_part = request.get_latest_part(); // TODO : i gotta drop the onse that are not files!
-	std::string			dashed_boundary_crlf;
-	
-	dashed_boundary_crlf = request.get_boundary();
-	dashed_boundary_crlf.insert(0, "--");
-	dashed_boundary_crlf.append("\r\n");
+	t_part &			latest_part = request.get_latest_part();
+	std::string			boundary = request.build_boundary(1);
 
 	content.insert(0, latest_part.unparsed_bytes);
 	latest_part.unparsed_bytes.clear();
 
-	// if it s new that means that in the previous part i found a crlf followed by a dashed_delim_crlf
 	if (latest_part.is_new)
 	{
-		if (!content.find(dashed_boundary_crlf))
+		if (!content.find(boundary))
 		{
-			content.erase(0, dashed_boundary_crlf.length());
+			content.erase(0, boundary.length());
 			latest_part.is_new = false;
 		}
 		else
-		{ // this means that for example we just got a part of the delim and not all of it.
+		{
 			latest_part.unparsed_bytes = content;
 			content.clear();
 			return ;
@@ -357,22 +367,20 @@ static void	extract_part(Request & request, std::string & content)
 
 	if (!latest_part.header_parsed)
 		extract_part_headers(request, latest_part, content);
-	
-	// when getting here the file name might or might not be set, only post the file if it s set! because that will be the only case where the part is related to a file input.
-	// if it s a file then directly open it to start writing at it!
-	if (latest_part.header_parsed)
-		extract_part_content(request, latest_part, content);
-	else
+
+	if (!latest_part.header_parsed)
 	{
-		latest_part.unparsed_bytes = content; // in case we only got a part of a the headers not all of them.
+		latest_part.unparsed_bytes = content;
 		content.clear();
+		return ;
 	}
+
+	extract_part_content(request, latest_part, content);
 
 	if (latest_part.is_complete && latest_part.file_name.empty())
 		request.drop_last_part();
 }
 
-// Processes a single chunk, doesn t matter if the request is chunked or not, if it s not it just assumes that there is only one signle chunk.
 static void	process_chunck(Request & request, std::string & chunk_content)
 {
 	if (request.isMultipart()) // TODO : && the request target is not CGI
@@ -382,6 +390,11 @@ static void	process_chunck(Request & request, std::string & chunk_content)
 			remove_ignored_area(request.get_boundary(), chunk_content);
 			if (chunk_content.empty())
 				return ;
+			else if (chunk_content.length() < request.get_boundary().length() + 4)
+			{
+				request.total_chunks_length -= chunk_content.length();
+				return request.storeUnparsedMsg(chunk_content);
+			}
 			request.markFirstPartAsReached();
 		}
 
@@ -393,7 +406,7 @@ static void	process_chunck(Request & request, std::string & chunk_content)
 			}
 		}
 		else
-			chunk_content.clear(); // TODO : check if this is the right way to ignore the data that comes after the last boundary!
+			chunk_content.clear();
 	}
 	else
 		chunk_content.clear();
@@ -434,12 +447,12 @@ void	update_chunk_state(Request & request, size_t length_left)
 		request.markAsHasUndoneChunk(true, length_left);
 }
 
-static size_t	extract_chunk_length(Request & request, std::string & msg)
+static std::string	extract_chunk_length(Request & request, std::string & msg)
 {
-	size_t	chunk_length;
 	size_t	crlf_pos;
 
 	crlf_pos = msg.find(CRLF);
+
 	if (crlf_pos != 0)
 	{
 		if (msg.length() >= 2)
@@ -447,27 +460,44 @@ static size_t	extract_chunk_length(Request & request, std::string & msg)
 		
 		request.storeUnparsedMsg(msg);
 		msg.clear();
-		return 0;	
+		return 0;
 	}
+
 	crlf_pos = msg.find(CRLF, 2);
-	if (crlf_pos == 2)
-		request.markAsBad(888);
+
 	if (crlf_pos == std::string::npos)
 	{
-		if (msg.length() >= 18)
+		if (msg.length() >= 20)
 			request.markAsBad(82);
 		else
 		{
 			request.storeUnparsedMsg(msg);
 			msg.clear();
-			return 0;
+			return "";
 		}
 	}
+	else if (crlf_pos == 2)
+		request.markAsBad(888);
+
 	msg.erase(0, 2);
 	crlf_pos -= 2;
+
 	std::string length = msg.substr(0, crlf_pos);
+
 	for (size_t i= 0; i < length.length(); i++)
 		length[i] = std::toupper(length[i]);
+
+	return length;
+}
+
+static size_t	find_chunk_length(Request & request, std::string & msg)
+{
+	size_t	chunk_length;
+
+	std::string	length = extract_chunk_length(request, msg);
+
+	if (length.empty())
+		return 0;
 
 	chunk_length = hex_to_size_t(request, length);
 
@@ -494,13 +524,12 @@ std::string	find_chunk_content(Request & request, std::string & msg)
 			chunk_length = request.getContentLength();
 		else
 		{
-			// in order to normalize the chunk syntax, since the first chunk is not preceded by CRLF
 			if (!request.first_chunk_fixed)
 			{
 				request.first_chunk_fixed = true;
 				msg.insert(0, CRLF);
 			}
-			if ((chunk_length = extract_chunk_length(request, msg)) == 0)
+			if ((chunk_length = find_chunk_length(request, msg)) == 0)
 				return "";
 		}
 	}
@@ -519,14 +548,13 @@ void    parse_body(Request & request, std::string & msg)
 	chunk_content = find_chunk_content(request, msg);
 	while (!chunk_content.empty() && !request.hasParsedBody())
 	{
+		chunk_content.insert(0, request.getUnparsedMsg());
+		request.resetUnparsedMsg();
 		process_chunck(request, chunk_content);
-		chunk_content.clear(); // Not necessary ?
+		chunk_content.clear();
 		chunk_content = find_chunk_content(request, msg);
 	}
 
 	if (request.hasParsedBody())
-	{
-		image.close();
 		request.markAsReady(true);
-	}
 }

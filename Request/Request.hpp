@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/04 17:07:06 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/06 02:21:24 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/09 05:57:56 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,23 +18,39 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <fstream>
 
 typedef struct  s_part {
 
-    std::string file_name;
-    std::string file_content;
-    std::string content_type;
-	bool		header_parsed;
-	bool		is_complete;
-    bool        is_new;
+    std::string     file_name;
+    std::string     file_content;
+    std::ofstream   file;
+    std::string     content_type;
+	bool		    header_parsed;
+	bool		    is_complete;
+    bool            is_new;
 
     std::string unparsed_bytes;
 
+    s_part() {};
+    s_part( const s_part & other )
+    {
+        std::cout << "Copy called!" <<std::endl;
+        this->file_name = other.file_name;
+        this->content_type = other.content_type;
+        this->header_parsed = other.header_parsed;
+        this->is_complete = other.is_complete;
+        this->is_new = other.is_new;
+    }
 } t_part;
 
 class Request {
 
     public :
+
+        size_t                              total_chunks_length;
+        
+
 
         bool                    first_chunk_fixed;
 
@@ -108,6 +124,8 @@ class Request {
         void    print_files();
 
         void    drop_last_part();
+
+        std::string    build_boundary(int type);
     private : 
 
         std::map<std::string, std::string>  headers;
@@ -136,7 +154,6 @@ class Request {
         /* */
         std::string                         unparsed_msg;
         size_t		                        content_length;
-        size_t                              total_chunks_length;
 
         std::string                         boundary;
 

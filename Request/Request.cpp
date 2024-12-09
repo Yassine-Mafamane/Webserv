@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:06:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/06 02:30:18 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/09 04:53:47 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ Request::Request( void )
     first_part_reached = false;
     last_part_reached = false;
     has_incomplete_part = false;
-    undone_chunk = false;
+    undone_chunk = false;     // useless ?
     size_left = 0;
     total_chunks_length = 0;
     is_ready = false;
@@ -163,6 +163,7 @@ t_part &	Request::get_latest_part()
         new_part.header_parsed = false;
         new_part.content_type = "text/plain";
         parts.push_back(new_part);
+        std::cout << "created !" << std::endl;
     }
     return this->parts.back();
 }
@@ -325,6 +326,23 @@ void    Request::set_body( const std::string & body )
 {
     this->body += body;
 }
+
+std::string    Request::build_boundary(int type)
+{
+    std::string _boundary = this->boundary;
+
+    _boundary.insert(0, "--");
+
+    if (type == 2)
+        _boundary.append("--");
+    if (type == 3)
+        _boundary.insert(0, "\r\n");
+
+    _boundary.append("\r\n");
+
+    return _boundary;
+}
+
 
 // Testing
 
