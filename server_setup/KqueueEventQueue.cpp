@@ -48,10 +48,10 @@ void    KqueueEventQueue::switch_interest(ClientSocket* client_info, short old_f
 		throw std::runtime_error("kevent(2) failed!");
 }
 
-void    KqueueEventQueue::register_listeners_in_kqueue(std::vector<struct ListenerSocket> & activeListners)
+void    KqueueEventQueue::register_listeners_in_kqueue(std::vector<ListenerSocket> & activeListners)
 {
-	std::vector<struct ListenerSocket>::iterator it = activeListners.begin();
-	std::vector<struct ListenerSocket>::iterator end = activeListners.end();
+	std::vector<ListenerSocket>::iterator it = activeListners.begin();
+	std::vector<ListenerSocket>::iterator end = activeListners.end();
 
 	for ( ; it != end; it++)
 	{

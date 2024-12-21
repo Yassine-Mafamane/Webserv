@@ -8,8 +8,8 @@ SocketManager::SocketManager()
 SocketManager::~SocketManager()
 {
     // Deleting the activeClients objects (This will result in calling the ClientSocket then Socket destructors!)
-    std::vector<struct ClientSocket *>::iterator it = activeClients.begin();
-    std::vector<struct ClientSocket *>::iterator end = activeClients.end();
+    std::vector<ClientSocket *>::iterator it = activeClients.begin();
+    std::vector<ClientSocket *>::iterator end = activeClients.end();
 
     for ( ; it != end; it++ )
     {
@@ -19,8 +19,8 @@ SocketManager::~SocketManager()
 
 bool SocketManager::already_binded(const ServerContext& server, struct in_addr host, unsigned short port)
 {
-    std::vector<struct ListenerSocket>::iterator  it = activeListners.begin();
-    std::vector<struct ListenerSocket>::iterator  end = activeListners.end();
+    std::vector<ListenerSocket>::iterator  it = activeListners.begin();
+    std::vector<ListenerSocket>::iterator  end = activeListners.end();
 
     for ( ; it != end; it++)
     {
@@ -76,7 +76,6 @@ void    SocketManager::initialize_sockets_on_port(struct addrinfo *list, const S
     unsigned int        n_sock = 0;
     int                 opt = 1; // TODO
     struct sockaddr_in *ip_access; 
-    int i = 0;
 
     for (struct addrinfo *entry = list; entry ; entry = entry->ai_next)
     {
@@ -149,7 +148,7 @@ void    SocketManager::create_listeners(const HttpContext& http_config)
 }
 
 
-std::vector<struct ListenerSocket>&	SocketManager::get_listeners()
+std::vector<ListenerSocket>&	SocketManager::get_listeners()
 {
     return this->activeListners;
 }

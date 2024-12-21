@@ -41,7 +41,7 @@ REQUEST_OBJECTS = $(REQUEST_SRCS:.cpp=.o)
 
 CPP = c++
 
-FLAGS =  -fsanitize=address #-Wall -Wextra -Werror -std=c++98
+FLAGS =  -fsanitize=address -Wall -Wextra -Werror -std=c++98
 
 NAME = webserv
 
