@@ -49,7 +49,7 @@ void	ConfigException::throwParsingError(const ConfigParseError & e, const token_
             error_info <<  token.line_num;
     }
 
-	throw std::invalid_argument(error_info.str()); // TODO : Better create a specific exception type
+	throw std::invalid_argument(error_info.str());
 }
 
 

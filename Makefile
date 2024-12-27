@@ -41,7 +41,7 @@ REQUEST_OBJECTS = $(REQUEST_SRCS:.cpp=.o)
 
 CPP = c++
 
-FLAGS =  -fsanitize=address -Wall -Wextra -Werror -std=c++98
+FLAGS =   -Wall -Wextra -Werror -std=c++98 -fsanitize=address
 
 NAME = webserv
 
@@ -64,7 +64,7 @@ Contexts/%.o : Contexts/%.cpp
 server_setup/%.o : server_setup/%.cpp
 	$(CPP) $(FLAGS) -c $< -o $@
 
-Request/%.o : Request/%.cpp
+Request/%.o : Request/%.cpp Request/Request.hpp
 	$(CPP) $(FLAGS) -c $< -o $@
 
 %.o : %.cpp

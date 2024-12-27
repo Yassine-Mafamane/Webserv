@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:31:07 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/30 00:43:20 by ymafaman         ###   ########.fr       */
+/*   Updated: 2024/12/27 12:16:40 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ class HttpContext {
 
     // private :
 
-		std::vector<t_error_page>	error_pages; // TODO : instead of using pair make a struct
+		std::vector<t_error_page>	error_pages;
 
 		std::vector<ServerContext>	servers;
 

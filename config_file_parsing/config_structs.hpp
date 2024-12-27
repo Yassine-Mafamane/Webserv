@@ -23,7 +23,6 @@ typedef struct token_info
 } token_info;
 
 
-// TODO : can be wrapped inside a namespace!
 typedef enum	e_ConfigParseError
 {
 	EMPTY,
