@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/28 15:07:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/28 11:50:59 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/28 12:59:44 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
-// #include "../response/Response.hpp"
 
 Server::Server()
 {
@@ -46,6 +45,7 @@ void    Server::accept_client_connection(ListenerSocket * listener)
     new_client->set_ident(client_sock_fd);
     new_client->set_servers(listener->get_servers());
     new_client->set_request(new Request()); // TODO
+    new_client->set_response(new Response(*new_client));
 
     socketManager.add_client(new_client);
     kqueueManager.register_event_in_kqueue(new_client, EVFILT_READ);
@@ -119,9 +119,7 @@ void    Server::start()
             }
             else if (((KqueueIdent *) events[i].udata)->get_type() == CHILD_ID && events[i].filter == EVFILT_PROC && (events[i].fflags & NOTE_SIGNAL))
             {
-               // Signal
-               std::cerr << "Signaled!" << std::endl;
-               exit (1);
+
             }
 		}
 	}

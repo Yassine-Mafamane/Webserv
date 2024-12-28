@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   StaticPage.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 12:21:32 by klamqari          #+#    #+#             */
-/*   Updated: 2024/12/28 10:50:02 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/28 13:20:02 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -343,12 +343,18 @@ void Response::format_body(char * content, size_t size)
     init info (upload dir path extention status)
 */
 
-void    Response::process_requset()
+// Upload dir. cgi or not . 
+
+void    Response::process_request()
 {
     /* 1 set and search for server context by Host header */
     this->server_context = get_server_context(this->clientsocket);
 
     /* TODO should check status of request */
+    if (clientsocket.get_request()->isBadRequest())
+    {
+        status = 400;
+    }
 
     /* 2 set and checking target */
     set_target(clientsocket.get_request()->get_target());
@@ -376,5 +382,4 @@ void    Response::process_requset()
 
     /* 7 check is a cgi request & if cgi create socketpair for IPC and open file in tmp */
     set_cgi_requerements(*this, _is_cgi); 
-
 }

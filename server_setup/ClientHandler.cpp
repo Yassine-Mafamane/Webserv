@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientHandler.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:37:00 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/28 11:43:54 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/28 13:06:31 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,7 @@ static void performPrimaryCheck(ClientSocket* client_info)
 	if(client_info->get_request()->get_method() == "POST" && ! client_info->get_request()->isChunked() && !client_info->get_request()->ContentLengthIsSet())
 		client_info->get_request()->markAsBad(963);
 
-    if (!client_info->get_response()) // TODO :
-    {
-        client_info->set_response( new Response( *client_info) );
-    }
-    
+    client_info->get_response()->process_request();
 }
 
 void    determine_parsing_stage(ClientSocket* client_info, std::string & rcvdMsg)
@@ -83,12 +79,13 @@ void    parse_client_request(ClientSocket* client_info, std::string & rcvdMsg)
     }
     catch(const char * e)
 	{
+        client_info->get_response()->process_request();
 		return ;
 	}
     catch(const std::exception & e)
     {
         std::cerr << e.what() << std::endl;
-        client_info->get_request()->markAsBad(3334);
+        client_info->get_request()->markAsBad(3334); // TODO : 500 ?
         return ;
     }
 }
@@ -123,8 +120,6 @@ CgiProcess * create_cgi_process_ident(ClientSocket* client_info)
     
     return (process);
 }
-
-
 
 // ADD NEW
 

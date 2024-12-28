@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 16:08:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/27 18:39:24 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/28 12:59:04 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 
 #include "SocketManager.hpp"
+#include "../response/Response.hpp"
 #include <fcntl.h>
 /// include only needed hraders ! 
 

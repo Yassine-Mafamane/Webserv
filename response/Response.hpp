@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 23:40:57 by klamqari          #+#    #+#             */
-/*   Updated: 2024/12/28 10:50:32 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/28 13:03:32 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,6 @@ class Response
         // methods
         void                                    delete_file( ) ;
 
-        void                                    process_requset();
         void                                    parse_headers();
         // void                                    get_response_body();
 
@@ -112,6 +111,7 @@ class Response
         int                         get_exit_stat();
         LocationContext *           get_location();
         
+        void                                    process_request();
         
 
         // cgi

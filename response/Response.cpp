@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 23:40:37 by klamqari          #+#    #+#             */
-/*   Updated: 2024/12/27 10:18:18 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/28 13:00:14 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,6 @@ Response::Response ( ClientSocket & clientsocket ) : clientsocket(clientsocket)
     _cgi_process      = NULL;
     _cgi_pair_socket  = NULL;
     server_context    = NULL;
-
-    process_requset();
 }
 
 const std::string & Response::getResponse( void )
