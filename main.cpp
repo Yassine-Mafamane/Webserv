@@ -6,52 +6,56 @@
 /*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 15:05:35 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/02 09:24:57 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/27 10:05:53 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.hpp"
-#include <signal.h>
+
+// void f()
+// {
+// 	system("leaks webserv");
+// }
+
 int main(int argc, char *argv[])
 {
-    std::string file_name;
-    // signal(SIGPIPE, SIG_IGN);
-    /*  Better create a function called usageERR to show this message! */
-    if (argc != 2)
-    {
-        std::cerr << "Usage : ./webserv file.config" << std::endl;
-        return (1);
-    }
+    // default_info.init_pages() ;
+	// atexit(f);
+	std::string file_name;
 
-    file_name = argv[1];
-    
-    if((file_name.length() <= 7) || (file_name.find(".config" ,file_name.length() - 7) == std::string::npos))
-    {
-        std::cerr << "Wrong file extension!" << std::endl;
-        std::cerr << "Usage : ./webserv file.config" << std::endl;
-        return (1);
-    }
+	/*  Better create a function called usageERR to show this message! */
+	if (argc != 2)
+	{
+		std::cerr << "Usage : ./webserv file.config" << std::endl;
+		return (1);
+	}
 
-    try
-    {
-        std::vector<struct ListenerSocket>  activeListners;
-        HttpContext                         http_config;
-        int                                 kqueue_fd;
+	file_name = argv[1];
+	
+	if((file_name.length() <= 7) || (file_name.find(".config" ,file_name.length() - 7) == std::string::npos))
+	{
+		std::cerr << "Wrong file extension!" << std::endl;
+		std::cerr << "Usage : ./webserv file.config" << std::endl;
+		return (1);
+	}
 
-        parse_config_file(file_name, http_config);
-        setup_servers(http_config, activeListners);
-        kqueue_fd = create_kqueue();
-        register_listeners_in_kqueue(kqueue_fd, activeListners);
-        poll_events(kqueue_fd, activeListners);      
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
-        return (1);
-    }
-    catch(const char* err_msg)
-    {
-        std::cerr << err_msg << '\n';
-        return (1);
-    }
+	try
+	{
+		HttpContext                         http_config;
+		Server                              server;
+
+		http_config = ConfigParser::getConfig(file_name);
+		server.setup(http_config);
+		server.start();
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+		return (1);
+	}
+	catch(const char* err_msg)
+	{
+		std::cerr << err_msg << '\n';
+		return (1);
+	}
 }

@@ -6,7 +6,7 @@
 /*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:06:28 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/25 01:04:20 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/28 10:18:33 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 
 Request::Request( void )
 {
-    // std::cout << "Request created" << std::endl;
     start_line_is_parsed = false;
     headers_parsed = false;
     body_is_parsed = false;
@@ -29,27 +28,24 @@ Request::Request( void )
     first_part_reached = false;
     last_part_reached = false;
     has_incomplete_part = false;
-    undone_chunk = false;
     size_left = 0;
-    total_chunks_length = 0;
+    total_body_length = 0;
     is_ready = false;
+    first_chunk_fixed = false;
+}
+
+s_part::~s_part()
+{
+    if (file)
+        delete file;
 }
 
 Request::~Request()
 {
-    // std::vector<t_part>::iterator it = this->parts.begin();
-    // for ( size_t i = 0 ; i < this->parts.size() ; ++i )
-    // {
-    //     delete (*it).file_content;
-    // }
+    
 }
 
 /* Getters */
-
-size_t      Request::get_total_chunks_length()
-{
-    return this->total_chunks_length;
-}
 
 bool    Request::hasParsedStartLine()
 {
@@ -157,17 +153,16 @@ bool    Request::hasIncompletePart()
 }
 
 
-t_part &	Request::get_latest_part( )
+t_part & 	Request::get_latest_part()
 {
     if (!parts.size() || parts.back().is_complete)
     {
-        // this->get_ClientSocket()->response->getUploadDir();
-        t_part  new_part; 
+        t_part  new_part;
         new_part.is_complete = false;
         new_part.is_new = true;
         new_part.header_parsed = false;
-        new_part.content_type = "text/plain";
-        new_part.file_content = NULL ;
+        new_part.file = NULL;
+        new_part.file_opened = false;
         parts.push_back(new_part);
     }
     return this->parts.back();
@@ -179,11 +174,6 @@ size_t    Request::hasAnUndoneChunk( void )
 }
 
 /* Setters */
-
-void      Request::set_total_chunks_length(size_t total_length)
-{
-    this->total_chunks_length += total_length;
-}
 
 void	Request::set_new_part( t_part & new_part )
 {
@@ -243,7 +233,7 @@ void    Request::markBodyParsed( const bool & parsed )
 void    Request::markAsBad( int i )
 {
     // Testing
-    std::cout << i << std::endl;
+    std::cerr << i << std::endl;
     this->is_bad = true;
     throw "Bad request!";
 }
@@ -296,6 +286,10 @@ void    Request::set_parsingErrorCode( short code )
 void    Request::storeUnparsedMsg(const std::string & msg )
 {
     this->unparsed_msg.append(msg);
+
+    // Mark request as invalid if start line or headers are too long.
+    if ((unparsed_msg.length() > 8000) && (!hasParsedStartLine() || !hasParsedHeaders()))
+        markAsBad(777);
 }
 
 void    Request::setHasIncompletePart( bool & incomplete )
@@ -303,13 +297,9 @@ void    Request::setHasIncompletePart( bool & incomplete )
     this->has_incomplete_part = incomplete;
 }
 
-void    Request::markAsHasUndoneChunk( bool undone, size_t size_left )
+void    Request::markAsHasUndoneChunk( size_t & size_left )
 {
-    if (undone)
-        this->size_left = size_left;
-    else
-        this->size_left = 0;
-    this->undone_chunk = undone;
+    this->size_left = size_left;
 }
 
 /* Methods */
@@ -332,6 +322,29 @@ void    Request::set_body( const std::string & body )
     this->body += body;
 }
 
+std::string    Request::build_boundary(int type)
+{
+    std::string _boundary = this->boundary;
+
+    _boundary.insert(0, "--");
+
+    if (type == 2)
+        _boundary.append("--");
+    if (type == 3 || type == 2)
+        _boundary.insert(0, "\r\n");
+
+    _boundary.append("\r\n");
+
+    return _boundary;
+}
+
+const std::map<std::string, std::string> & Request::get_headers() const
+{
+    return this->headers;
+}
+
+
+
 // Testing
 
 void    Request::print_headrs()
@@ -343,19 +356,9 @@ void    Request::print_headrs()
         std::cout << (*it).first << ": " << (*it).second << std::endl;
 }
 
-
-
-void    Request::print_files()
-{
-    for (std::vector<t_part>::iterator i = parts.begin(); i != parts.end(); i++)
-    {
-        // std::cout << "{"  ;
-        // std::cout << i->file_content ;
-        // std::cout << "}" << std::endl;      
-    }
-}
-
 void    Request::drop_last_part()
 {
     this->parts.pop_back();
 }
+
+

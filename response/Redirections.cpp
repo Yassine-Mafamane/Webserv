@@ -6,7 +6,7 @@
 /*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/31 22:33:17 by klamqari          #+#    #+#             */
-/*   Updated: 2024/11/30 14:12:46 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/23 12:18:08 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,35 +27,34 @@
 **     308 (Permanent Redirect)
 */
 
-void    Response::redirection_handler( unsigned short status, std::string msg_or_file )
-{
-    std::stringstream ss;
-    std::string host = "http://127.0.0.1:8888";
-
-    if ( (status > 300 && status < 304) || 307 == status || 308 == status )
-    {
-        size_t pos = msg_or_file.find("http://");
-        if (pos != 0 && msg_or_file.front() != '/')
-        {
-            msg_or_file = host + "/" + msg_or_file;
-        }
-        else if (pos != 0)
-        {
-            msg_or_file = host + msg_or_file;
-        }
-        this->message.append( "HTTP/1.1 "  + default_info.getCodeMsg( status ) + "\r\n" ) ;
-        this->message.append( "Location: " + msg_or_file + "\r\nContent-Length: 0\r\nConnection: "\
-        + this->connection + "\r\n\r\n" ) ;
-    }
-    else
-    {
-        ss << msg_or_file.length() ;
-        this->message.append( "HTTP/1.1 "  + default_info.getCodeMsg( status ) + "\r\n" ) ;
-        this->message.append("Content-Length: " + ss.str() + "\r\nConnection: "\
-        + this->connection + "\r\n\r\n" + msg_or_file );
-    }
-    this->_end_of_response = true ;
-}
+// void    Response::redirection_handler()
+// {
+//     std::stringstream ss;
+//     unsigned short status = _location->get_redirection().status_code;
+//     std::string msg_or_file = _location->get_redirection().target;
+    
+//     if ( (status > 300 && status < 304) || 307 == status || 308 == status )
+//     {
+//         this->message.append( "HTTP/1.1 "  + default_info.getCodeMsg( status ) + "\r\n" );
+//         this->message.append( "Location: " + msg_or_file + "\r\nContent-Length: 0\r\n" );
+//         if (this->clientsocket.get_request()->get_is_persistent())
+//             this->message.append("Connection: close\r\n\r\n");
+//         else
+//             this->message.append("Connection: keep-alive\r\n\r\n");
+//     }
+//     else
+//     {
+//         ss << msg_or_file.length() ;
+//         this->message.append( "HTTP/1.1 "  + default_info.getCodeMsg( status ) + "\r\n" );
+//         this->message.append("Content-Length: " + ss.str() + "\r\n");
+//         if (this->clientsocket.get_request()->get_is_persistent())
+//             this->message.append("Connection: close\r\n\r\n");
+//         else
+//             this->message.append("Connection: keep-alive\r\n\r\n");
+//         this->message.append("\r\n\r\n" + msg_or_file );
+//     }
+//     this->_end_of_response = true ;
+// }
 
 /*
 https://datatracker.ietf.org/doc/html/rfc7231

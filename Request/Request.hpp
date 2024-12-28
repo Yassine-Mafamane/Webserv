@@ -6,14 +6,13 @@
 /*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/04 17:07:06 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/11/22 23:47:34 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/28 10:17:48 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 
-#include "../server_setup/Server.hpp"
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -23,20 +22,26 @@
 
 typedef struct  s_part {
 
-    std::string file_name;
-    std::ofstream *file_content;
-    std::string content_type;
-	bool		header_parsed;
-	bool		is_complete;
-    bool        is_new;
+    std::string     file_name;
+    std::ofstream   *file;
+	bool		    header_parsed;
+	bool		    is_complete;
+    bool            is_new;
+    bool            file_opened;
 
     std::string unparsed_bytes;
+
+    ~s_part();
 
 } t_part;
 
 class Request {
 
     public :
+
+        size_t                  total_body_length;
+
+        bool                    first_chunk_fixed;
 
         /* Constructors */
         Request( void );
@@ -45,8 +50,7 @@ class Request {
         ~Request();
 
         /* Getters */
-		t_part &	get_latest_part();
-        size_t      get_total_chunks_length();
+		t_part &  	get_latest_part();
         std::string get_target();
         std::string get_query();
         std::string get_method();
@@ -72,7 +76,6 @@ class Request {
         size_t   hasAnUndoneChunk( void ); 
 
         /* Setters */
-        void      set_total_chunks_length(size_t total_length);
 		void	set_new_part( t_part & new_part );
 
         void    set_method( const std::string & method );
@@ -97,26 +100,20 @@ class Request {
         void    markLastPartAsReached();
         void    set_parsingErrorCode( short code );
         void    storeUnparsedMsg(const std::string & msg );
-        void    markAsHasUndoneChunk( bool undone, size_t size_left );
+        void    markAsHasUndoneChunk( size_t & size_left );
 
         /* Methods */
         void    resetUnparsedMsg();
         void    setHeader( const std::string& name, const std::string& value );
 
         void    print_headrs();
-        void    print_files();
 
         void    drop_last_part();
 
-        struct ClientSocket * get_ClientSocket() { return this->clientsocket ; }
-        void set_ClientSocket(struct ClientSocket * clientsocket) { this->clientsocket = clientsocket ; }
-        std::map<std::string, std::string> & get_headers() {return this->headers ;}
-        const std::string & get_request_method() {return this->method ; }
+        std::string    build_boundary(int type);
         
-        const std::string & get_request_target() { return this->target ; }
-        
+        const std::map<std::string, std::string> & get_headers() const;
 
-        
     private : 
 
         std::map<std::string, std::string>  headers;
@@ -145,7 +142,6 @@ class Request {
         /* */
         std::string                         unparsed_msg;
         size_t		                        content_length;
-        size_t                              total_chunks_length;
 
         std::string                         boundary;
 
@@ -155,9 +151,7 @@ class Request {
         bool					first_part_reached; // In case of a multipart body.
         bool					last_part_reached;
         bool					has_incomplete_part;
-        bool                    undone_chunk;
         size_t                  size_left;
-        struct ClientSocket *          clientsocket ;
 };
 
 
