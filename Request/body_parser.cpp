@@ -211,7 +211,7 @@ static void	check_part_header(Request & request, std::string & header, t_part & 
 
 	if (!part.file_name.empty() && !part.file_opened)
 	{
-		part.file = new std::ofstream(part.file_name, std::ios::out | std::ios::trunc | std::ios::binary);
+		part.file = new std::ofstream(request.upload_dir + part.file_name, std::ios::out | std::ios::trunc | std::ios::binary);
 
 		if (!part.file || !part.file->is_open())
 			request.markAsBad(500);
@@ -374,7 +374,7 @@ static void	extract_part(Request & request, std::string & content) // ok
 
 static void	process_chunck(Request & request, std::string & chunk_content)
 {
-	if (request.isMultipart()) // TODO : && the request target is not CGI
+	if (request.isMultipart() && !request.is_cgi_request) // TODO : && the request target is not CGI
 	{
 		if (!request.hasReachedFirstPart())
 		{
@@ -399,8 +399,12 @@ static void	process_chunck(Request & request, std::string & chunk_content)
 		else
 			chunk_content.clear();
 	}
-	else
-		chunk_content.clear();
+	else if (request.is_cgi_request)
+	{
+		cgi_content_file << chunk_content;
+	}
+
+	chunk_content.clear();
 }
 
 size_t	hex_to_size_t(Request & request, const std::string & chunk_size) // ok
