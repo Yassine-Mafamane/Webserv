@@ -326,7 +326,7 @@ void create_socket_pair(Response & response)
     {
         throw std::runtime_error("socketpair failed");
     }
-    response.set_input_path(get_rand_file_name(num_file));
+    
 }
 
 void create_html_table(std::string & ls_files, const std::string & target)
@@ -372,10 +372,18 @@ void    set_cgi_requerements( Response & response, bool & is_cgi)
     if (check_is_cgi(response.get_path(), response.get_cgi_exrention() , response.clientsocket.get_request()->isBadRequest() )) // , 
     {
         is_cgi = true;
+        clientsocket.request.is_cgi_request = true;
     }
 
     if (is_cgi)
+    {
         create_socket_pair(response);
+        response.set_input_path(get_rand_file_name(num_file));
+
+        response.clientsocket->request->cgi_content_file(response.get_input_path()); // TODO Protect
+        if (response.clientsocket->request->cgi_content_file.is_open())
+            response.clientsocket->request->markAsBad(811);
+    }
     
 }
 
@@ -406,6 +414,8 @@ void extract_info_from_location(Response & response, LocationContext & location)
     response.extract_pathinfo_form_target(location.get_root_directory());
     
     response.set_upload_dir(location.get_upload_dir());
+    response.clientsocket.request->upload_dir = location.get_upload_dir();
+
     response.set_path(location.get_root_directory() + response.get_target());
     
     if (is_dir(response.get_path()) && is_file(response.get_path() + "/" + location.get_index())) /* if the target is a directory. check if insid it a index . if index existe concatinat it with the path */
@@ -424,6 +434,8 @@ void extract_info_from_server(Response & response,  const ServerContext & server
     response.extract_pathinfo_form_target(servercontext.get_root_directory());
     
     response.set_upload_dir(servercontext.get_upload_dir());
+    response.clientsocket.request->upload_dir = servercontext.get_upload_dir();
+
     response.set_path(servercontext.get_root_directory() + response.get_target());
 
     if (is_dir(response.get_path()) && is_file(response.get_path() + "/" + servercontext.get_index())) /* if the target is a directory. check if insid it a index . if index existe concatinat it with the path */

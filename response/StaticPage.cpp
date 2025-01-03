@@ -236,7 +236,7 @@ LocationContext * Response::find_location(const std::string &target)
     return ( NULL );
 }
 
-void    Response::extract_pathinfo_form_target(const std::string & root)
+void    Response::extract_pathinfo_form_target(const std::string & root) // TOASKFOR : How the path info is being extracted from the target.
 {
     std::string tmp_info;
     std::string tmp_target;

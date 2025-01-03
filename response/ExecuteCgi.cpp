@@ -25,16 +25,16 @@ void    Response::setup_environment(std::vector<std::string> & string_env)
     std::map< std::string , std::string>::iterator it ;
 
     string_env.push_back("REQUEST_METHOD=" + this->clientsocket.get_request()->get_method());
-    // string_env.push_back("CONTENT_LENGTH=11");
+    // string_env.push_back("CONTENT_LENGTH=11"); // TODO
     string_env.push_back("CONTENT_TYPE=text/plain");
-    string_env.push_back("REQUEST_METHOD=POST");
-    string_env.push_back("QUERY_STRING=");
+    string_env.push_back("REQUEST_METHOD=POST"); // TODO Make it work with POST and GET methods
+    string_env.push_back("QUERY_STRING="); // TODO Add the query
     string_env.push_back("PATH_INFO=" + this->_path_info);
-    string_env.push_back("SERVER_PROTOCOL=HTTP/1.1" ) ;
+    string_env.push_back("SERVER_PROTOCOL=HTTP/1.1" ) ; // This should be https
     string_env.push_back("REDIRECT_STATUS=1" );
     string_env.push_back("SCRIPT_FILENAME=" + this->_path_);
     string_env.push_back("PHP_FCGI_MAX_REQUESTS=1");
-    string_env.push_back("PHP_INI_SCAN_DIR=/Users/klamqari/php/lib/php.ini");
+    string_env.push_back("PHP_INI_SCAN_DIR=/Users/klamqari/php/lib/php.ini"); // TODO single string ?
 
     for (it = headers.begin(); it != headers.end(); ++it)
     {

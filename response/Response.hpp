@@ -86,7 +86,6 @@ class Response
         void                                    parse_headers();
         // void                                    get_response_body();
 
-        
 
         void format_start_line();
         void  format_headers(size_t size);

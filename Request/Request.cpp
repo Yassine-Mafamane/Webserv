@@ -32,6 +32,7 @@ Request::Request( void )
     total_body_length = 0;
     is_ready = false;
     first_chunk_fixed = false;
+    is_cgi_request = false;
 }
 
 s_part::~s_part()

@@ -43,6 +43,12 @@ class Request {
 
         bool                    first_chunk_fixed;
 
+        bool                    is_cgi_request;
+
+        std::string             upload_dir;
+
+        std::ofstream            cgi_content_file;
+
         /* Constructors */
         Request( void );
 
