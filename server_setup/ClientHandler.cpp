@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientHandler.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:37:00 by ymafaman          #+#    #+#             */
-/*   Updated: 2025/01/04 00:55:28 by ymafaman         ###   ########.fr       */
+/*   Updated: 2025/01/04 01:37:37 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,11 +45,13 @@ void    determine_parsing_stage(ClientSocket* client_info, std::string & rcvdMsg
     if (!request->hasParsedHeaders())
     {
         parse_headers(*request, rcvdMsg);
+        if (request->hasParsedHeaders())
+            performPrimaryCheck(client_info);
+            
         return determine_parsing_stage(client_info, rcvdMsg);
     }
 
     // ADD NEW
-    performPrimaryCheck(client_info);
     // if (!client_info->get_response())
     // {
     //     client_info->set_response( new Response( *client_info) );

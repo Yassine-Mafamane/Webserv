@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response_tools.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 08:55:51 by klamqari          #+#    #+#             */
-/*   Updated: 2025/01/04 01:09:24 by ymafaman         ###   ########.fr       */
+/*   Updated: 2025/01/04 01:35:58 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -392,7 +392,6 @@ void create_socket_pair(Response & response, bool & is_cgi)
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, response.get_pair_fds() ) == -1)
     {
         response.set_status(500);
-        std::cout << "500" << std::endl;
         is_cgi = false;
     }
 }

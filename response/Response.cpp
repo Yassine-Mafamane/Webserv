@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 23:40:37 by klamqari          #+#    #+#             */
-/*   Updated: 2025/01/04 01:11:34 by ymafaman         ###   ########.fr       */
+/*   Updated: 2025/01/04 01:51:38 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,8 +217,8 @@ Response::~Response()
     if (s_fds[1] != -1)
         close(s_fds[1]);
         
-    // if (this->input_path != "")
-    //     remove(this->input_path.c_str()) ;
+    if (this->input_path != "")
+        remove(this->input_path.c_str()) ;
     
     if (_cgi_pair_socket)
     {

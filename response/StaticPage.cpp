@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   StaticPage.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 12:21:32 by klamqari          #+#    #+#             */
-/*   Updated: 2025/01/04 01:10:12 by ymafaman         ###   ########.fr       */
+/*   Updated: 2025/01/04 01:38:28 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -344,6 +344,7 @@ void Response::format_body(char * content, size_t size)
 
 void    Response::process_request()
 {
+    std::cout << "procissing" << std::endl; 
     /* 1 set and search for server context by Host header */
     this->server_context = get_server_context(this->client_info);
 
