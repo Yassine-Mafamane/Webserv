@@ -3,15 +3,72 @@
 /*                                                        :::      ::::::::   */
 /*   response_tools.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/27 08:55:51 by klamqari          #+#    #+#             */
-/*   Updated: 2024/12/27 18:00:35 by klamqari         ###   ########.fr       */
+/*   Updated: 2025/01/04 01:09:24 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes/main.hpp"
 # include "DefaultInfo.hpp"
+
+void to_upper(std::string & str)
+{
+    for (size_t i = 0; i < str.length(); ++i)
+    {
+        str[i] = toupper(str[i]);
+    }
+}
+
+bool is_name_in_header(std::string header, std::string header_name)
+{
+    size_t pos = 0;
+    to_upper(header);
+    to_upper(header_name);
+
+    pos = header.find(header_name);
+    if (pos != 0 || pos == std::string::npos)
+        return false;
+
+    return ( true );
+}
+
+std::string get_header_value(const std::vector<std::string> & headers, const std::string & header_name)
+{
+    std::vector<std::string>::const_iterator it = headers.begin();
+    std::vector<std::string>::const_iterator end = headers.end();
+    
+    for (; it != end ; ++it)
+    {
+        if (is_name_in_header(*it, header_name))
+        {
+            return ((*it).substr(header_name.length()));
+        }
+    }
+    return "";
+}
+
+void write_headers_to_msg(const std::vector<std::string> & headers, std::string & message)
+{
+    /* set headers in response */
+    std::vector<std::string>::const_iterator it = headers.begin();
+    std::vector<std::string>::const_iterator end = headers.end();
+    bool is_content_type_exist = false;
+
+    for (; it != end - 1; ++it)
+    {
+        if (is_name_in_header(*it, "Content-Type:"))
+            is_content_type_exist = true;
+
+        if (!is_name_in_header(*it, "Status:"))
+            message += (*it) + "\r\n";
+    }
+
+    /* if no content-type header that means an error */
+    if (!is_content_type_exist)
+        throw 500;
+}
 
 void remove_file(const std::string & path)
 {
@@ -44,10 +101,13 @@ void remove_dir_recursive(const std::string & path)
     remove_file(path);
 }
 
-void    set_connection_header(std::string & message, bool close, unsigned short & status)
+void    set_connection_header(Request & request, std::string & message, unsigned short & status)
 {
-    if ( close || (status >= 400 && status <= 599))
+    if ( !request.isPersistent() || (status >= 400 && status <= 599))
+    {
         message += ("Connection: close\r\n");
+        request.markAsPersistent(false);
+    }
     else
         message += ("Connection: keep-alive\r\n");
 }
@@ -83,7 +143,6 @@ void read_file(std::ifstream & page_content, char *buffer, size_t & size)
     if ( page_content.fail() && ! page_content.eof() )
         throw 500 ;
     buffer[page_content.gcount()] = '\0';
-    
     size = page_content.gcount();
 }
 
@@ -96,7 +155,9 @@ void check_end_of_file(std::ifstream & page_content, bool & end_of_response, boo
         tranfer_encoding = true;
 
     if ( tranfer_encoding && page_content.gcount() != 0 )
+    {
         end_of_response = false;
+    }
 }
 
 
@@ -138,9 +199,10 @@ std::string get_rand_file_name(size_t & file_num)
 }
 
 void normalize_target(std::string &target, unsigned short & status)
-{
-    if ( target.find("..") == std::string::npos )
+{   
+    if ( target.find("..") == std::string::npos || status != 200)
         return ;
+
     std::vector<std::string> directories = _split_(target, '/');
     std::vector<std::string>::iterator it = directories.begin();
     while (it != directories.end())
@@ -168,8 +230,9 @@ void normalize_target(std::string &target, unsigned short & status)
 static std::string is_image(const std::string & file_name)
 {
     std::string imgs[] = {".png",".avif", ".gif", ".webp", ".dmp", ".apng"} ;
-
-    for (size_t i = 0; i < imgs->length(); ++i)
+    size_t size = sizeof(imgs) / sizeof(imgs[0]);
+    
+    for (size_t i = 0; i < size; ++i)
     {
         if ( file_name.find(imgs[i], file_name.length() - imgs[i].length()) != std::string::npos )
             return ( "\r\nContent-Type: image/" +  imgs[i].erase(0, 1) ) ;
@@ -180,8 +243,9 @@ static std::string is_image(const std::string & file_name)
 static std::string is_text(const std::string & file_name)
 {
     std::string texts[] = {".txt", ".html", ".htm", ".css", ".js"} ;
+    size_t size = sizeof(texts) / sizeof(texts[0]);
     
-    for (size_t i = 0; i < texts->length() ; ++i)
+    for (size_t i = 0; i < size ; ++i)
     {
         if ( file_name.find(texts[i], file_name.length() - texts[i].length()) != std::string::npos )
         {
@@ -196,8 +260,9 @@ static std::string is_text(const std::string & file_name)
 static std::string is_image_jpeg(const std::string & file_name)
 {
     std::string jpeg[] = {".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp"};
-
-    for ( size_t i = 0; i < jpeg->length() ; ++i)
+    size_t size = sizeof(jpeg) / sizeof(jpeg[0]);
+    
+    for ( size_t i = 0; i < size ; ++i)
     {
         if ( file_name.find(jpeg[i], file_name.length() - jpeg[i].length()) != std::string::npos)
             return ( "\r\nContent-Type: image/jpeg" ) ;
@@ -208,8 +273,9 @@ static std::string is_image_jpeg(const std::string & file_name)
 static std::string is_image_icon(const std::string & file_name)
 {
     std::string ico[] = {".ico", ".cur"} ;
-
-    for (size_t i = 0; i < ico->length(); ++i)
+    size_t size = sizeof(ico) / sizeof(ico[0]);
+    
+    for (size_t i = 0; i < size; ++i)
     {
         if ( file_name.find(ico[i] ,file_name.length() - ico[i].length()) != std::string::npos )
             return ( "\r\nContent-Type: image/x-icon" ) ;
@@ -227,11 +293,11 @@ static std::string is_video(const std::string & file_name)
 std::string get_content_type(const std::string & file_name)
 {
     std::string type = "";
-    
+
     type = is_text(file_name);
     if (type != "")
         return type;
-    
+
     type = is_image(file_name);
     if (type != "")
         return type;
@@ -314,19 +380,21 @@ bool is_existe(const std::string & path)
 
 bool check_is_cgi(const std::string & path, const std::string & cgi_extention, bool is_bad_request) 
 {
+    // std::cout << "extention : " << cgi_extention << std::endl;
     return (!is_bad_request && !cgi_extention.empty()
         && (path.length() - cgi_extention.length() > 0)
         && (path.find(cgi_extention, path.length()
         - cgi_extention.length()) != std::string::npos));
 }
 
-void create_socket_pair(Response & response)
+void create_socket_pair(Response & response, bool & is_cgi)
 {
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, response.get_pair_fds() ) == -1)
     {
-        throw std::runtime_error("socketpair failed");
+        response.set_status(500);
+        std::cout << "500" << std::endl;
+        is_cgi = false;
     }
-    
 }
 
 void create_html_table(std::string & ls_files, const std::string & target)
@@ -340,14 +408,16 @@ void create_html_table(std::string & ls_files, const std::string & target)
 }
 
 /* get info about file or dir and set it html table row & appent it in ls_files (body of response) */
-void    append_row( std::string  path , std::string target, struct dirent * f, std::string & ls_files )
+void    append_row( const Response & response, struct dirent * f, std::string & ls_files )
 {
-    std::stringstream size ;
+    std::stringstream size;
     struct stat s;
+    std::string path   = response.get_path();
+    std::string target = response.get_target();
 
     if (path.back() != '/')
         path += ("/");
-        
+
     if (target.back() != '/')
         target += ("/");
 
@@ -369,30 +439,29 @@ void    append_row( std::string  path , std::string target, struct dirent * f, s
 
 void    set_cgi_requerements( Response & response, bool & is_cgi)
 {
-    if (check_is_cgi(response.get_path(), response.get_cgi_exrention() , response.clientsocket.get_request()->isBadRequest() )) // , 
+    if (check_is_cgi(response.get_path(), response.get_cgi_exrention() , response.client_info.get_request()->isBadRequest() ))
     {
         is_cgi = true;
-        clientsocket.request.is_cgi_request = true;
+        response.client_info.get_request()->is_cgi_request = true;
     }
 
     if (is_cgi)
     {
-        create_socket_pair(response);
+        create_socket_pair(response, is_cgi);
         response.set_input_path(get_rand_file_name(num_file));
 
-        response.clientsocket->request->cgi_content_file(response.get_input_path()); // TODO Protect
-        if (response.clientsocket->request->cgi_content_file.is_open())
-            response.clientsocket->request->markAsBad(811);
+        response.client_info.get_request()->cgi_content_file.open(response.get_input_path(), std::ios::out | std::ios::trunc | std::ios::binary);
+        if (!response.client_info.get_request()->cgi_content_file.is_open())
+            response.client_info.get_request()->markAsBad(811);
     }
-    
 }
 
 
-const ServerContext * get_server_context(ClientSocket & clientsocket)
+const ServerContext * get_server_context(ClientSocket & client_info)
 {
-    std::string host = clientsocket.get_request()->get_headers().find("HOST")->second ; // TODO : store host separatly in the request
+    std::string host = client_info.get_request()->get_headers().find("HOST")->second ; // TODO : store host separatly in the request
 
-    for (std::vector<const ServerContext*>::const_iterator i = clientsocket.get_servers().begin() ; i != clientsocket.get_servers().end() ; ++i)
+    for (std::vector<const ServerContext*>::const_iterator i = client_info.get_servers().begin() ; i != client_info.get_servers().end() ; ++i)
     {
         std::vector<std::string>::const_iterator b = (*i)->get_server_names().begin();
         std::vector<std::string>::const_iterator e = (*i)->get_server_names().end();
@@ -405,7 +474,7 @@ const ServerContext * get_server_context(ClientSocket & clientsocket)
             }
         }
     }
-    return (clientsocket.get_servers().front()) ;
+    return (client_info.get_servers().front()) ;
 }
 
 void extract_info_from_location(Response & response, LocationContext & location)
@@ -414,14 +483,17 @@ void extract_info_from_location(Response & response, LocationContext & location)
     response.extract_pathinfo_form_target(location.get_root_directory());
     
     response.set_upload_dir(location.get_upload_dir());
-    response.clientsocket.request->upload_dir = location.get_upload_dir();
+    response.client_info.get_request()->upload_dir = location.get_upload_dir();
 
     response.set_path(location.get_root_directory() + response.get_target());
     
+    if (response.get_status() != 200)
+        return ;
+
     if (is_dir(response.get_path()) && is_file(response.get_path() + "/" + location.get_index())) /* if the target is a directory. check if insid it a index . if index existe concatinat it with the path */
         response.set_path(response.get_path() + "/" + location.get_index());
         
-    else if (is_dir(response.get_path()) && !location.get_auto_index() && response.clientsocket.get_request()->get_method() != "DELETE")  /* if this path is a directory and autoindex off . that means error 403 (forbidden) */
+    else if (is_dir(response.get_path()) && !location.get_auto_index() && response.client_info.get_request()->get_method() != "DELETE")  /* if this path is a directory and autoindex off . that means error 403 (forbidden) */
         response.set_status(403);
 
     else if (!is_existe(response.get_path()))
@@ -434,14 +506,17 @@ void extract_info_from_server(Response & response,  const ServerContext & server
     response.extract_pathinfo_form_target(servercontext.get_root_directory());
     
     response.set_upload_dir(servercontext.get_upload_dir());
-    response.clientsocket.request->upload_dir = servercontext.get_upload_dir();
+    response.client_info.get_request()->upload_dir = servercontext.get_upload_dir();
 
     response.set_path(servercontext.get_root_directory() + response.get_target());
+
+    if (response.get_status() != 200)
+        return ;
 
     if (is_dir(response.get_path()) && is_file(response.get_path() + "/" + servercontext.get_index())) /* if the target is a directory. check if insid it a index . if index existe concatinat it with the path */
         response.set_path(response.get_path() + "/" + servercontext.get_index());
 
-    else if (is_dir(response.get_path()) && !servercontext.get_auto_index() && response.clientsocket.get_request()->get_method() != "DELETE")  /* if this path is a directory and autoindex off . that means error 403 (forbidden) */
+    else if (is_dir(response.get_path()) && !servercontext.get_auto_index() && response.client_info.get_request()->get_method() != "DELETE")  /* if this path is a directory and autoindex off . that means error 403 (forbidden) */
         response.set_status(403);
 
     else if (!is_existe(response.get_path()))
@@ -516,6 +591,21 @@ std::vector<std::string> _split_(const std::string & str, char c)
             break ;
         
         strings.push_back( str.substr( start, end - start ) );
+    }
+    return ( strings );
+}
+
+std::vector<std::string> split(const std::string & str, const std::string & to_find )
+{
+    std::vector<std::string> strings ;
+    size_t start = 0;
+    size_t pos = 0;
+
+    while ( (pos = str.find(to_find, pos)) && pos != std::string::npos )
+    {
+        strings.push_back( str.substr( start,  pos - start) );
+        pos += to_find.length();
+        start = pos;
     }
     return ( strings );
 }

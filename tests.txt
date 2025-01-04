@@ -1,0 +1,29 @@
+Send a body in case of 500
+
+
+----------------------------
+http {
+
+	server {
+
+		allowed_methods	GET;
+		host			localhost;
+		listen			8888;
+		root			Users/ymafaman/Desktop/;
+		index			index.txt;
+		autoindex		on;
+		error_page 404	/404.htmlx;
+
+		location /config_file_parsing {
+			root 		/Users/ymafaman/Desktop/wsnewest;
+			#index		index;
+			#autoindex	off;
+		}
+	}
+}
+
+# why is this returning a 404 ? this should be a 403, in other cases it does show 403 but why not in this one?
+----------------------------
+
+
+Return default error page in case the specified page wasn t found

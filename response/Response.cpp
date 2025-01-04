@@ -6,21 +6,21 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 23:40:37 by klamqari          #+#    #+#             */
-/*   Updated: 2024/12/28 13:00:14 by ymafaman         ###   ########.fr       */
+/*   Updated: 2025/01/04 01:11:34 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "Response.hpp"
 # include "DefaultInfo.hpp"
 
-Response::Response ( ClientSocket & clientsocket ) : clientsocket(clientsocket)
+Response::Response ( ClientSocket & client_info ) : client_info(client_info)
 {
     _end_of_response  = false;
     _tranfer_encoding = false;
     is_first_message  = true;
     _location         = NULL;
     exit_stat         = -1;
-    status            = 200; 
+    status            = 200;
     p_is_running      = false;
     _is_cgi           = false;
     s_fds[0]          = -1;
@@ -81,20 +81,27 @@ void    Response::error_response( short error )
     }
 }
 
- // TODO : khalid
 void Response::responde_with_overrided_page( std::string err_page_path )
 {
     if ( ! this->_tranfer_encoding )
     {
-        this->_path_ = err_page_path;// TODO : khalid
+        this->_path_ = err_page_path;
         set_cgi_requerements(*this, _is_cgi);
         if (_is_cgi)
-            throw (int)10001;// TODO : khalid
+            throw (int)101;
     }
     try
     {
         // this->format_static_response();
-        format_response();
+        if (_is_cgi)
+        {
+            format_cgi_response();
+        }
+        /*  */
+        else
+        {
+            format_static_response();
+        }
     }
     catch(int err)
     {
@@ -111,6 +118,7 @@ void Response::responde_with_default_page( short error )
     this->message.append( "HTTP/1.1 " + error_msg + "\r\nContent-Type: text/html\r\nContent-Length: " ) ;
     this->message.append(len.str() + "\r\nConnection: close\r\nServer: 1337WebServ\r\n\r\n") ;
     this->message.append(err_body);
+    client_info.get_request()->markAsPersistent(false);
     this->_end_of_response = true;
 }
 
@@ -118,13 +126,13 @@ bool Response::is_allowed_method()
 {
     /* search in location */
     if ( _location &&  (std::find( this->_location->get_allowed_methods().begin(), this->_location->get_allowed_methods().end(), \
-    this->clientsocket.get_request()->get_method() ) !=  this->_location->get_allowed_methods().end()) )
+    this->client_info.get_request()->get_method() ) !=  this->_location->get_allowed_methods().end()) )
     {
         return ( true ) ;
     }
     /* search in server */
     if (!_location && (std::find(this->server_context->get_allowed_methods().begin(), this->server_context->get_allowed_methods().end(), \
-    this->clientsocket.get_request()->get_method()) != this->server_context->get_allowed_methods().end()) )
+    this->client_info.get_request()->get_method()) != this->server_context->get_allowed_methods().end()) )
     {
         return ( true ) ;
     }
@@ -209,8 +217,8 @@ Response::~Response()
     if (s_fds[1] != -1)
         close(s_fds[1]);
         
-    if (this->input_path != "")
-        remove(this->input_path.c_str()) ;
+    // if (this->input_path != "")
+    //     remove(this->input_path.c_str()) ;
     
     if (_cgi_pair_socket)
     {
@@ -353,4 +361,9 @@ const std::string &         Response::get_path(void) const
 const std::string &        Response::get_cgi_exrention(void) const
 {
     return (this->_cgi_extention);
+}
+
+const std::string & Response::get_upload_dir() const
+{
+    return (this->_upload_dir);
 }

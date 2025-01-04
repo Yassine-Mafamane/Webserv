@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   body_parser.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 16:59:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/28 10:08:57 by klamqari         ###   ########.fr       */
+/*   Updated: 2025/01/04 01:14:07 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,7 +211,8 @@ static void	check_part_header(Request & request, std::string & header, t_part & 
 
 	if (!part.file_name.empty() && !part.file_opened)
 	{
-		part.file = new std::ofstream(request.upload_dir + part.file_name, std::ios::out | std::ios::trunc | std::ios::binary);
+		std::cout << "---->" << request.upload_dir << std::endl;
+		part.file = new std::ofstream(request.upload_dir + "/" + part.file_name, std::ios::out | std::ios::trunc | std::ios::binary);
 
 		if (!part.file || !part.file->is_open())
 			request.markAsBad(500);
@@ -282,6 +283,7 @@ static void	extract_part_content(Request & request, t_part & part, std::string &
 		{
 			part.is_complete = true;
 			request.markLastPartAsReached();
+			std::cout << "--->" << request.total_body_length << std::endl;
 			request.markBodyParsed(true);
 			content.clear();
 
@@ -374,7 +376,7 @@ static void	extract_part(Request & request, std::string & content) // ok
 
 static void	process_chunck(Request & request, std::string & chunk_content)
 {
-	if (request.isMultipart() && !request.is_cgi_request) // TODO : && the request target is not CGI
+	if (request.isMultipart() && !request.is_cgi_request)
 	{
 		if (!request.hasReachedFirstPart())
 		{
@@ -401,7 +403,7 @@ static void	process_chunck(Request & request, std::string & chunk_content)
 	}
 	else if (request.is_cgi_request)
 	{
-		cgi_content_file << chunk_content;
+		request.cgi_content_file << chunk_content;
 	}
 
 	chunk_content.clear();

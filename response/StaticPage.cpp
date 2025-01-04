@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 12:21:32 by klamqari          #+#    #+#             */
-/*   Updated: 2024/12/28 13:20:02 by ymafaman         ###   ########.fr       */
+/*   Updated: 2025/01/04 01:10:12 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void    Response::format_response()
     }
 
     /* */
-    else if ( is_first_message && clientsocket.get_request()->get_method() == "DELETE" )
+    else if ( is_first_message && client_info.get_request()->get_method() == "DELETE" )
     {
         delete_file();
     }
@@ -46,13 +46,23 @@ void    Response::format_response()
     }
 }
 
+/*
+**     301 (Moved Permanently)
+**     302 (Found / Moved Temporarily)
+**     303 (See Other)
+**     307 (Temporary Redirect)
+**     308 (Permanent Redirect)
+*/
 void    Response::redirection_handler()
 {
     std::stringstream ss;
     status = _location->get_redirection().status_code;
     std::string target = _location->get_redirection().target;
+    if ( target == "" )
+        throw (int)status;
+
     format_start_line();
-    set_connection_header(message, !clientsocket.get_request()->isPersistent(), status);
+    set_connection_header(*client_info.get_request(), message, status);
 
     if ( (status > 300 && status < 304) || 307 == status || 308 == status )
     {
@@ -101,7 +111,8 @@ void    Response::directory_listing()
     /* loop on content (files dir ... ) of directory  */
     while ( (f = readdir( d )) && f != NULL )
     {
-        append_row( this->_path_, this->_target, f, ls_files);
+        if (std::string(f->d_name) != ".")
+            append_row( *this, f, ls_files);
     }
     if ( closedir(d) == -1 )
         throw 500 ;
@@ -112,7 +123,6 @@ void    Response::directory_listing()
     message += ls_files ; /* add body content to message */
     _end_of_response = true ;
 }
-
 
 void Response::format_static_response()
 {
@@ -128,13 +138,12 @@ void Response::format_static_response()
     format_start_line();
 
     format_headers(size);
-    
+
     format_body(buffer, size);
 }
 
 void    Response::format_cgi_response()
 {
-    // format_start_line();
 
     parse_headers();
 
@@ -143,19 +152,6 @@ void    Response::format_cgi_response()
 }
 
 
-std::string find_header(const std::string & headers, const std::string & header_name)
-{
-    size_t pos = 0;
-    size_t end = 0;
-
-    pos = headers.find(header_name);
-    if ( pos == std::string::npos)
-        return "";
-
-    end = headers.find("\r\n", pos);
-
-    return (headers.substr(pos + header_name.length(), end - (pos + header_name.length())));
-}
 
 void Response::parse_headers()
 {
@@ -169,37 +165,39 @@ void Response::parse_headers()
         throw 500;
 
     std::string headers = extract_headers(data_out, pos);
-
-    if ( data_out.length() - pos + 4 > RESP_BUFF )
+    std::vector<std::string> arr_headers = split(headers, "\r\n");
+    std::string header_value;
+    if (data_out.length() - pos + 4 > RESP_BUFF)
         _tranfer_encoding = true;
 
-    std::string header = find_header(headers, "Status:");
-    if (header == "")
+    /*  Start line */
+    header_value = get_header_value(arr_headers, "Status:");
+    if (header_value == "")
         format_start_line();
     else
-        message += "HTTP/1.1 " + header + "\r\n";
+        message += "HTTP/1.1 " + header_value + "\r\n";
 
+    /* set headers in message */
+    write_headers_to_msg(arr_headers, message);
 
-    header = find_header(headers, "Content-type:");
-    if (header != "")
-        message += "Content-type:" + header + "\r\n";
-
+    /* set outher headers */
     format_headers(data_out.length() - pos - 4);
 
-    // message.append(headers);
+    /* move the offset to the next position */
     offset += pos + 4;
 }
 
 void Response::read_cgi_output()
 {
-    ssize_t n ;
-    char    buffer[ RESP_BUFF ] ;
+    ssize_t n;
+    char    buffer[ RESP_BUFF ];
 
-    n = read(this->s_fds[0], buffer, (RESP_BUFF - 1)) ;
+    n = read(this->s_fds[0], buffer, (RESP_BUFF - 1));
     if ( n == -1 )
     {
         throw 500 ;
     }
+
     buffer[n] = '\0';
     this->data_out.append(buffer, n);
 }
@@ -236,7 +234,7 @@ LocationContext * Response::find_location(const std::string &target)
     return ( NULL );
 }
 
-void    Response::extract_pathinfo_form_target(const std::string & root) // TOASKFOR : How the path info is being extracted from the target.
+void    Response::extract_pathinfo_form_target(const std::string & root)
 {
     std::string tmp_info;
     std::string tmp_target;
@@ -285,20 +283,21 @@ void  Response::format_headers(size_t size)
             message += "\r\nContent-Type: text/html";
         else if (!_is_cgi)
             message += get_content_type(_path_);
-
+        
         message += "\r\n";
 
-        set_connection_header(message, !clientsocket.get_request()->isPersistent(), status);
+        set_connection_header(*client_info.get_request(), message, status);
         message += "\r\n";
         is_first_message = false;
     }
+    
 }
 
 void Response::format_body(char * content, size_t size)
 {
     std::string body = "";
 
-    if ( clientsocket.get_request()->get_method() == "HEAD" )
+    if ( client_info.get_request()->get_method() == "HEAD" )
     {
         _end_of_response = true;
         return ;
@@ -322,7 +321,7 @@ void Response::format_body(char * content, size_t size)
     /* body of tranfer encoding (chunck) */
     if ( _tranfer_encoding )    
     {
-        std::ostringstream size_hex ;
+        std::ostringstream size_hex;
 
         size_hex << std::hex << body.length();
         message.append(size_hex.str() + "\r\n");
@@ -343,23 +342,21 @@ void Response::format_body(char * content, size_t size)
     init info (upload dir path extention status)
 */
 
-// Upload dir. cgi or not . 
-
 void    Response::process_request()
 {
     /* 1 set and search for server context by Host header */
-    this->server_context = get_server_context(this->clientsocket);
+    this->server_context = get_server_context(this->client_info);
 
-    /* TODO should check status of request */
-    if (clientsocket.get_request()->isBadRequest())
+    /* should check status of request */
+    if (client_info.get_request()->isBadRequest())
     {
-        status = 400;
+        this->status = 400;
     }
 
     /* 2 set and checking target */
-    set_target(clientsocket.get_request()->get_target());
+    set_target(client_info.get_request()->get_target());
     normalize_target( this->_target , this->status);
-
+ 
     /* 3 find location */
     find_match_more_location();
 
@@ -371,7 +368,7 @@ void    Response::process_request()
     }
 
     /* 5 check is redirect */
-    if (_location && _location->redirect_is_set)
+    if (_location && _location->redirect_is_set && status == 200)
         return;
 
     /* 6 extracte and init info ( upload dir path extention status ) */
@@ -381,5 +378,5 @@ void    Response::process_request()
         extract_info_from_server(*this, *(this->server_context));
 
     /* 7 check is a cgi request & if cgi create socketpair for IPC and open file in tmp */
-    set_cgi_requerements(*this, _is_cgi); 
+    set_cgi_requerements(*this, _is_cgi);
 }

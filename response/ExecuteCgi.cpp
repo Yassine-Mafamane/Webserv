@@ -6,7 +6,7 @@
 /*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 19:31:45 by klamqari          #+#    #+#             */
-/*   Updated: 2024/12/27 10:18:31 by klamqari         ###   ########.fr       */
+/*   Updated: 2025/01/02 17:14:01 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,20 +21,15 @@
 void    Response::setup_environment(std::vector<std::string> & string_env)
 {
     std::string var;
-    std::map<std::string, std::string> headers = this->clientsocket.get_request()->get_headers() ;
-    std::map< std::string , std::string>::iterator it ;
+    std::map<std::string, std::string> headers = this->client_info.get_request()->get_headers();
+    std::map< std::string , std::string>::iterator it;
 
-    string_env.push_back("REQUEST_METHOD=" + this->clientsocket.get_request()->get_method());
-    // string_env.push_back("CONTENT_LENGTH=11"); // TODO
-    string_env.push_back("CONTENT_TYPE=text/plain");
-    string_env.push_back("REQUEST_METHOD=POST"); // TODO Make it work with POST and GET methods
-    string_env.push_back("QUERY_STRING="); // TODO Add the query
+    string_env.push_back("REQUEST_METHOD=" + this->client_info.get_request()->get_method());
+    // string_env.push_back("CONTENT_LENGTH=11");
+    string_env.push_back("QUERY_STRING=" + client_info.get_request()->get_query());
     string_env.push_back("PATH_INFO=" + this->_path_info);
-    string_env.push_back("SERVER_PROTOCOL=HTTP/1.1" ) ; // This should be https
-    string_env.push_back("REDIRECT_STATUS=1" );
+    string_env.push_back("REDIRECT_STATUS=200");
     string_env.push_back("SCRIPT_FILENAME=" + this->_path_);
-    string_env.push_back("PHP_FCGI_MAX_REQUESTS=1");
-    string_env.push_back("PHP_INI_SCAN_DIR=/Users/klamqari/php/lib/php.ini"); // TODO single string ?
 
     for (it = headers.begin(); it != headers.end(); ++it)
     {
@@ -54,12 +49,29 @@ void string_to_char(char **env, std::vector<std::string> & string_env)
     (env)[i] = NULL;
 }
 
+
+
+static std::string get_executable_path(const std::string & extention)
+{
+    if (extention == ".php")
+    {
+        return "/Users/klamqari/php/bin/php-cgi";
+    }
+    else if (extention == ".py")
+    {
+        return "/usr/bin/python3";
+    }
+    return "";
+}
+
 void Response::execute_cgi( void )
 {
     std::vector<std::string> string_env;
+    std::string exec_path = get_executable_path(this->_cgi_extention);
+
     char **env;
     char *av[3] = {
-        (char *)"/Users/klamqari/php/bin/php-cgi",
+        (char *)exec_path.c_str(),
         (char *)this->_path_.c_str(),
         NULL,
     };
@@ -68,12 +80,13 @@ void Response::execute_cgi( void )
     env = new char* [string_env.size() + 1];
     string_to_char(env, string_env);
 
-    this->pid = fork() ;
+    this->pid = fork();
     if (this->pid == -1)
-        throw std::runtime_error("fork failed");
-
-
-    if (this->pid == 0)
+    {
+        _is_cgi = false;
+        status = 500;
+    }
+    else if (this->pid == 0)
     {
         if (close(this->s_fds[0])  == -1)
             exit(1);

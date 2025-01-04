@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 11:37:00 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/28 13:06:31 by ymafaman         ###   ########.fr       */
+/*   Updated: 2025/01/04 00:55:28 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,6 +216,7 @@ void    respond_to_client(ClientSocket* client_info, KqueueEventQueue & kqueueMa
             return ;
         }
         send_response(client_info->get_ident(), res);
+        
     }
     else if (response->is_cgi() && response->p_is_running && response->get_exit_stat() == -1) /* checking if process still running  */
     {

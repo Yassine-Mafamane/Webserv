@@ -1,2 +1,3 @@
 [-] If upload dir was not set!
 [-] CGI executable
+[-] Close connection in case of a bad request

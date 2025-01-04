@@ -6,7 +6,7 @@
 /*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/28 15:07:44 by ymafaman          #+#    #+#             */
-/*   Updated: 2024/12/28 12:59:44 by ymafaman         ###   ########.fr       */
+/*   Updated: 2025/01/04 01:10:22 by ymafaman         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,8 +105,15 @@ void    Server::start()
 
                 if (client_info->get_response()->end_of_response() )
                 {
-                    kqueueManager.switch_interest(client_info, EVFILT_WRITE, EVFILT_READ);
-                    create_new_request(client_info, socketManager);
+                    if (!client_info->get_request()->isPersistent())
+                    {
+                        socketManager.delete_client(events[i].ident);   
+                    }
+                    else
+                    {
+                        kqueueManager.switch_interest(client_info, EVFILT_WRITE, EVFILT_READ);
+                        create_new_request(client_info, socketManager);
+                    }
                 }
             }
             else if ( ((KqueueIdent *) events[i].udata)->get_type() == CGI_PAIR_SOCK && events[i].filter == EVFILT_READ)

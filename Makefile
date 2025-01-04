@@ -1,4 +1,4 @@
-SERVER_SRCS			=	server_setup/Server.cpp \
+SERVER_SRCS			=	server_setup/server.cpp \
 						server_setup/SocketManager.cpp  \
 						server_setup/ClientHandler.cpp \
 						server_setup/KqueueEventQueue.cpp \

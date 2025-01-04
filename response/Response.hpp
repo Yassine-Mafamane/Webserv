@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ymafaman <ymafaman@student.42.fr>          +#+  +:+       +#+        */
+/*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 23:40:57 by klamqari          #+#    #+#             */
-/*   Updated: 2024/12/28 13:03:32 by ymafaman         ###   ########.fr       */
+/*   Updated: 2025/01/01 12:29:28 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,11 @@ class ClientSocket;
 class Response
 {
     private :
-        const ServerContext                     * server_context ;
         std::string                             message ;
         bool                                    _end_of_response ;
         bool                                    _tranfer_encoding ;
         bool                                    is_first_message ;
         std::ifstream                           page_content ;
-        LocationContext *                       _location;
         unsigned short                          status;
         std::string                             _upload_dir ;
         bool                                    _running_post ;
@@ -86,6 +84,7 @@ class Response
         void                                    parse_headers();
         // void                                    get_response_body();
 
+        
 
         void format_start_line();
         void  format_headers(size_t size);
@@ -96,9 +95,11 @@ class Response
     public:
 
         // Response ( const ServerContext & server_context, Request & request ) ;
-        Response ( ClientSocket & clientsocket );
+        const ServerContext                     * server_context ;
+        LocationContext *                       _location;
+        Response ( ClientSocket & client_info );
         /* Getters */
-        ClientSocket                            & clientsocket ;
+        ClientSocket                            & client_info ;
         
         const std::string &         getResponse  (void);
         const std::string &         getUploadDir  (void);
@@ -144,6 +145,7 @@ class Response
         const std::string &         get_target(void) const;
         const std::string &         get_path(void) const;
         const std::string &         get_cgi_exrention(void) const;
+        const std::string &         get_upload_dir() const;
         
         
         

@@ -1,0 +1,23 @@
+When a client gets disconected, instead of passing it s ident to delete it. You just can pass it s client_info object. Thus no need to search for the right client. But be carefull because the clients objects are stored in a vector inside the socketManager! 
+
+If creating the client request or responce fails when allocating, just delete the client object and no need to store it in the event queue.
+
+In the event loop better use a switch case statement instead of if else.
+
+Add the alias directive inside location.
+
+Allow GET by default.
+
+If version is HTTP/1.1, the host header is mandatory!
+
+The client has to get bounced off in case of a bad request!
+
+(Nginx) After parsing the start line if the final target is /.. the request is concidered bad (400)
+
+In case of a redirection for example return 404, if the string to show is empty return the 404 error page.
+
+Paths in the config file must be normalized for example the following //;
+
+Redirection of an error page must be as following : if the code is a redirection code then send the string as location don t wory if the location is empty because it happens in nginx as well. Else if it s an error code, if the string isn t empty the send the string as body else send the provided error page else send the default one.
+
+The HEAD Method!

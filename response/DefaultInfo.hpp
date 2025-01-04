@@ -6,7 +6,7 @@
 /*   By: klamqari <klamqari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/27 15:21:52 by klamqari          #+#    #+#             */
-/*   Updated: 2024/12/27 10:14:08 by klamqari         ###   ########.fr       */
+/*   Updated: 2024/12/28 18:21:02 by klamqari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #define DEFAULTINFO_HPP
 
 # include "includes/main.hpp"
-
 
 class DefaultInfo
 {
